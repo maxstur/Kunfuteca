@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "categoria": "Desarrollo Web",
+    "nombre": "Página Web Personalizada",
+    "descripcion": "Desarrollo de un sitio web adaptado a tus necesidades y preferencias.",
+    "precio": 499.99,
+    "imagen": "https://lh5.googleusercontent.com/PlBVfBLmOaN80OeXey2PjCAyqgAcsIs-erYgdHeUHuH4HNWwg4TowCvaqYrqJ12E7Y4eeK1y7CmfJUNRQnKQju3qbr9wL9Qe5uVjN8zaBNBZLn1wkYpKm5mK32wjvcwb7Q=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 2,
+    "categoria": "Diseño Gráfico",
+    "nombre": "Paquete de Identidad Visual",
+    "descripcion": "Creación de logotipo, tarjetas de visita y material promocional.",
+    "precio": 199.99,
+    "imagen": "https://lh4.googleusercontent.com/WSA9TmZnUIkhK65fpNiZb6BtBJSSntzdbf4QYg_EV6XDHBR9IEqSm6hLFg4-zl5CfHjby6vXCFn2mFxj2Ht_3unbZZ94uGP-7cjA1ruQGS-ANJa-GJ2rve-oHsS9Xr51-w=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 3,
+    "categoria": "Edición de Videos",
+    "nombre": "Servicio de Edición de Videos Profesionales",
+    "descripcion": "Edición y producción de videos de alta calidad para promociones y eventos.",
+    "precio": 349.99,
+    "imagen": "https://lh5.googleusercontent.com/17GKL62SEQZMCwKt5lwvfeK4nMOM4L-Vk8JSGu8_z2P7DpvMeHfiOLOdLBhevwdPUncQgNtTQup0pKNpuwf09jY=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 4,
+    "categoria": "Desarrollo de Apps",
+    "nombre": "Aplicación Móvil Personalizada",
+    "descripcion": "Diseño y desarrollo de una aplicación móvil adaptada a tus necesidades.",
+    "precio": 799.99,
+    "imagen": "https://lh4.googleusercontent.com/G2Q8RVOgRLL3qaCOsMLihUtKSYnIXYU2OpiWW1dLiGf3BUxcMpgw1U27IicQPzANnjtgIS_2qOH5pd-nBiEE0hqGLj0RhXl3TrkNCSoM18hlQjtjURexddG3sddUx97Eng=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 5,
+    "categoria": "Software para Restaurantes",
+    "nombre": "Sistema de Gestión de Pedidos y Pagos",
+    "descripcion": "Software completo para restaurantes con funciones de carta digital y pago en línea.",
+    "precio": 599.99,
+    "imagen": "https://lh5.googleusercontent.com/V43aSBBIwQWQMPdgsXJ76RRcFtOAfKYKaFfQk730WfxoMqTEOQdy5MsI0vrJHWacg-Ba9pe9Lh4dP2HStyZ9z5E=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 6,
+    "categoria": "Software para Ferreterías",
+    "nombre": "Gestión de Inventario y Ventas",
+    "descripcion": "Software especializado para ferreterías con seguimiento de inventario y ventas.",
+    "precio": 449.99,
+    "imagen": "https://images.app.goo.gl/kyTK3jQ5ptVXBurH7",
+    "disponibilidad": true
+  },
+  {
+    "id": 7,
+    "categoria": "Software para Educación",
+    "nombre": "Plataforma de Gestión Académica",
+    "descripcion": "Software diseñado para la gestión académica con seguimiento de alumnos y profesores.",
+    "precio": 699.99,
+    "imagen": "https://lh6.googleusercontent.com/NXoQ9Yz8HQPUOMttLz2w-6BqsQvJk3LJi_3SCfsdKZrKAS79pgTUDqMqIvb1sqn2ucy3LZIdxCC873r_GPyUyLE=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 8,
+    "categoria": "Servicio de Community Management",
+    "nombre": "Community Manager Profesional",
+    "descripcion": "Gestión de redes sociales para fortalecer la presencia online de tu marca.",
+    "precio": 299.99,
+    "imagen": "https://lh5.googleusercontent.com/hM5-KZotuus7Veoy_dgVyhQtz4U5v0ltENZVKxhtuoOsIb-BzyWrh3WfZVwHMceUYW7pXBpe7nHZ9vtdWwnOG2M=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 9,
+    "categoria": "Servicio de Content Creation",
+    "nombre": "Community Manager Profesional",
+    "descripcion": "Gestión de redes sociales para fortalecer la presencia online de tu marca.",
+    "precio": 299.99,
+    "imagen": "https://lh5.googleusercontent.com/hM5-KZotuus7Veoy_dgVyhQtz4U5v0ltENZVKxhtuoOsIb-BzyWrh3WfZVwHMceUYW7pXBpe7nHZ9vtdWwnOG2M=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": 10,
+    "categoria": "Servicio de Creación de Contenido UGC",
+    "nombre": "Community Manager Profesional",
+    "descripcion": "Gestión de redes sociales para fortalecer la presencia online de tu marca.",
+    "precio": 299.99,
+    "imagen": "https://lh5.googleusercontent.com/hM5-KZotuus7Veoy_dgVyhQtz4U5v0ltENZVKxhtuoOsIb-BzyWrh3WfZVwHMceUYW7pXBpe7nHZ9vtdWwnOG2M=w1280",
+    "disponibilidad": true
+  },
+  {
+    "id": "ls0zz9zgebtrx",
+    "categoria": "Desarrollo Web",
+    "nombre": "Página Web Personalizada",
+    "descripcion": "Desarrollo de un sitio web adaptado a tus necesidades y preferencias.",
+    "precio": 499.99,
+    "imagen": "https://lh5.googleusercontent.com/PlBVfBLmOaN80OeXey2PjCAyqgAcsIs-erYgdHeUHuH4HNWwg4TowCvaqYrqJ12E7Y4eeK1y7CmfJUNRQnKQju3qbr9wL9Qe5uVjN8zaBNBZLn1wkYpKm5mK32wjvcwb7Q=w1280",
+    "disponibilidad": true,
+    "status": true
+  },
+  {
+    "id": "ls1005dlskajy",
+    "categoria": "Desarrollo Web",
+    "nombre": "Página Web Personalizada",
+    "descripcion": "Desarrollo de un sitio web adaptado a tus necesidades y preferencias.",
+    "precio": 499.99,
+    "imagen": "https://lh5.googleusercontent.com/PlBVfBLmOaN80OeXey2PjCAyqgAcsIs-erYgdHeUHuH4HNWwg4TowCvaqYrqJ12E7Y4eeK1y7CmfJUNRQnKQju3qbr9wL9Qe5uVjN8zaBNBZLn1wkYpKm5mK32wjvcwb7Q=w1280",
+    "disponibilidad": true,
+    "status": true
+  }
+]
