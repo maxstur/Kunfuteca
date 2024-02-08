@@ -1,9 +1,9 @@
 const fs = require("fs");
 
 class CartsManager {
+  static id = 0;
   constructor(filePath) {
     this.path = filePath;
-    this.id = 0;
     fs.writeFileSync(filePath, "[]");
   }
 
@@ -11,11 +11,10 @@ class CartsManager {
     try {
       const content = await fs.promises.readFile(this.path, "utf-8");
       const carts = JSON.parse(content);
-  
-      const cart = { id: ++this.id, items: [] };
-  
+      const cart = { id: ++CartsManager.id, products: [] };
+
       carts.push(cart);
-  
+
       await fs.promises.writeFile(this.path, JSON.stringify(carts, null, "\t"));
     } catch (error) {
       console.error("Error adding cart:", error);
@@ -26,9 +25,9 @@ class CartsManager {
     try {
       const content = await fs.promises.readFile(this.path, "utf-8");
       const carts = JSON.parse(content);
-  
-      const cart = carts.find((i) => i.id == id);
-  
+
+      const cart = carts.find(i => i.id == id);
+
       return cart;
     } catch (error) {
       console.error("Error getting cart:", error);
@@ -37,27 +36,28 @@ class CartsManager {
   }
 
   async addProduct(id, productId) {
-    try {
       const content = await fs.promises.readFile(this.path, "utf-8");
       const carts = JSON.parse(content);
-  
-      let cartIndex = carts.findIndex((i) => i.id == id);
-      if (cartIndex >= 0) {
-        const cart = carts[cartIndex];
-        const productIndex = cart.items.findIndex((i) => i.item == productId);
+      const cartIndex = carts.findIndex(i => i.id == id);
+      const cart = {...carts[cartIndex]};
+
+      const index = cart.products.findIndex(i => i.item == productId);
         if (productIndex >= 0) {
+          // Si el producto ya existe, aumentar la cantidad
           cart.items[productIndex].quantity += 1;
         } else {
+          // Si el producto no existe, agregarlo al carrito con cantidad 1
           cart.items.push({ item: productId, quantity: 1 });
         }
         carts[cartIndex] = cart;
-        await fs.promises.writeFile(this.path, JSON.stringify(carts, null, "\t"));
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
-    }
+
+        // Escribir la matriz actualizada de carritos en el archivo
+        await fs.promises.writeFile(
+          this.path,
+          JSON.stringify(carts, null, "\t")
+        );
+        
   }
 }
 
 module.exports = CartsManager;
-

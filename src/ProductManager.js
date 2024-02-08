@@ -1,25 +1,21 @@
 const fs = require("fs");
 
 class ProductManager {
+  static id = 0;
   constructor(filePath) {
     this.path = filePath;
-    this.id = 0;
     fs.writeFileSync(filePath, "[]");
   }
 
   async addProduct(product) {
-    try {
-      const content = await fs.promises.readFile(this.path, "utf-8");
-      const products = JSON.parse(content);
-      product.Id = ++this.id;
-      products.push(product);
-      await fs.promises.writeFile(
-        this.path,
-        JSON.stringify(products, null, "\t")
-      );
-    } catch (error) {
-      console.error("Error adding product:", error);
-    }
+    const content = await fs.promises.readFile(this.path, "utf-8");
+    const products = JSON.parse(content);
+    product.Id = ++ProductManager.id;
+    products.push(product);
+    await fs.promises.writeFile(
+      this.path,
+      JSON.stringify(products, null, "\t")
+    );
   }
 
   async getProducts() {
@@ -33,41 +29,21 @@ class ProductManager {
     }
   }
 
-  async getProductById(id) {
-    try {
-      const content = await fs.promises.readFile(this.path, "utf-8");
-      const products = JSON.parse(content);
-      const product = products.find((p) => p.Id == id);
-      return product;
-    } catch (error) {
-      console.error("Error getting product by id:", error);
-      return null;
-    }
-  }
-
   async updateProduct(id, newProduct) {
-    try {
       let products = await this.getProducts();
-      let index = products.findIndex((p) => p.Id == id);
-      if (index !== -1) {
-        products[index] = { ...newProduct, Id: products[index].Id };
-        await fs.promises.writeFile(
-          this.path,
-          JSON.stringify(products, null, "\t")
-        );
-      } else {
-        console.error("Product not found with id:", id);
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-    }
+      let index = products.findIndex(p => p.Id == id);
+      products[index] = { ...products[index], id: products[index].id };
+      await fs.promises.writeFile(
+        this.path,
+        JSON.stringify(products, null, "\t")
+      );
   }
 
   async deleteProduct(id) {
     try {
       const content = await fs.promises.readFile(this.path, "utf-8");
       let products = JSON.parse(content);
-      products = products.filter((p) => p.Id != id);
+      products = products.filter(p => p.id != id);
       await fs.promises.writeFile(
         this.path,
         JSON.stringify(products, null, "\t")
@@ -79,4 +55,3 @@ class ProductManager {
 }
 
 module.exports = ProductManager;
-
