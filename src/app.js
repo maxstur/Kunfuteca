@@ -9,9 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.listen(port, () => {
-  console.log(
-    `Servidor Kunfuteando en: http://localhost:${port}`
-  );
+  console.log(`Servidor Kunfuteando en: http://localhost:${port}`);
 });
 
 // Otras configuraciones y rutas

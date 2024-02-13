@@ -1,10 +1,62 @@
 [
 	{
-		"description": "item 1",
-		"Id": 1
+		"id": 1,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
 	},
 	{
-		"description": "item 2",
-		"Id": 2
+		"id": 2,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
+	},
+	{
+		"id": 3,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
+	},
+	{
+		"id": 4,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
+	},
+	{
+		"id": 5,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
+	},
+	{
+		"id": 6,
+		"title": "Producto de ejemplo",
+		"description": "Descripción del producto",
+		"code": "12345",
+		"price": 19.99,
+		"stock": 100,
+		"category": "Electrónicos",
+		"status": true
 	}
 ]
