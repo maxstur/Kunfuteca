@@ -1,11 +1,11 @@
 [
 	{
-		"id": 2,
-		"title": "Mac",
-		"description": "Compu hoy",
-		"code": "424643",
-		"price": "300",
-		"stock": "938",
+		"id": 1,
+		"title": "dell",
+		"description": "Compu",
+		"code": "424634",
+		"price": "3434",
+		"stock": "3434",
 		"category": "technology",
 		"status": true
 	}

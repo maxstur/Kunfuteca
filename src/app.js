@@ -28,6 +28,11 @@ const serverHttp = app.listen(port, () => {
 // sockets.io
 const io = new Server(serverHttp);
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 io.on("connection", (socket) => {
   console.log("Socket conectado");
 
