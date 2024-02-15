@@ -1,62 +1,12 @@
 [
 	{
-		"id": 1,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
-		"status": true
-	},
-	{
 		"id": 2,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
-		"status": true
-	},
-	{
-		"id": 3,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
-		"status": true
-	},
-	{
-		"id": 4,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
-		"status": true
-	},
-	{
-		"id": 5,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
-		"status": true
-	},
-	{
-		"id": 6,
-		"title": "Producto de ejemplo",
-		"description": "Descripción del producto",
-		"code": "12345",
-		"price": 19.99,
-		"stock": 100,
-		"category": "Electrónicos",
+		"title": "Mac",
+		"description": "Compu hoy",
+		"code": "424643",
+		"price": "300",
+		"stock": "938",
+		"category": "technology",
 		"status": true
 	}
 ]
