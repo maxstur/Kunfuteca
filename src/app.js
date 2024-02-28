@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const port = 8080;
 const productsRouter = require("./routes/products.router");
@@ -9,13 +10,11 @@ const ProductManager = require("./dao/dbManagers/ProductManager");
 const mongoose = require("mongoose");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
+const connectDB = require('./dbConnect/db');
 
-mongoose
-  .connect(
-    `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/ecommerce`
-  )
-  .then(() => console.log("Conectado a MongoDB - Atlas"))
-  .catch((err) => console.log(err));
+
+// Llama a la función connectDB para conectar con MongoDB
+connectDB();
 
 const app = express();
 
