@@ -15,14 +15,14 @@
   <tbody id="productsTable">
     {{#each products}}
       <tr>
-        <td>{{this.id}}</td>
+        <td>{{this._id}}</td>
         <td>{{this.title}}</td>
         <td>{{this.description}}</td>
         <td>{{this.code}}</td>
         <td>{{this.price}}</td>
         <td>{{this.stock}}</td>
         <td>{{this.category}}</td>
-        <td><button on click="deleteProduct({{this.id}})">Delete</button></td>
+        <td><button onclick="deleteProduct('{{this._id}}')">Delete</button></td>
       </tr>
     {{/each}}
   </tbody>

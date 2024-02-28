@@ -5,8 +5,17 @@ const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
-const ProductManager = require("./ProductManager");
+const ProductManager = require("./dao/dbManagers/ProductManager");
+const mongoose = require("mongoose");
+const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
+
+mongoose
+  .connect(
+    `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/ecommerce`
+  )
+  .then(() => console.log("Conectado a MongoDB - Atlas"))
+  .catch((err) => console.log(err));
 
 const app = express();
 
@@ -33,7 +42,7 @@ app.use((req, res, next) => {
   next();
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("Socket conectado");
 
   socket.on("createNewProduct", async (newProduct) => {
@@ -46,6 +55,16 @@ io.on("connection", (socket) => {
     await productManager.deleteProduct(id);
     const products = await productManager.getProducts();
     io.emit("Lista actualizada", { products });
+  });
+
+  /* Chat */
+  const messages = await messageModel.find().lean();
+  socket.emit("chat messages", { messages });
+
+  socket.on("new message", async ({ messageInfo }) => {
+    await messageModel.create(messageInfo);
+    const messages = await messageModel.find().lean();
+    io.emit("chat messages", { messages });
   });
 });
 

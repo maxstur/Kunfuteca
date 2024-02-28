@@ -38,14 +38,14 @@ socket.on("Lista actualizada", ({ products }) => {
   products.forEach((product) => {
     productsTable.innerHTML += `
       <tr>   
-        <td>${product.id}</td>
+        <td>${product._id}</td>
         <td>${product.title}</td>
         <td>${product.description}</td>
         <td>${product.code}</td>
         <td>${product.price}</td>
         <td>${product.stock}</td>
         <td>${product.category}</td>
-        <td><button onclick="deleteProduct(${product.id})">Delete</button></td>
+        <td><button onclick="deleteProduct('${product._id}')">Delete</button></td>
       </tr>
     `;
   });

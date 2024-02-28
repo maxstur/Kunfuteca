@@ -46,22 +46,21 @@ class CartsManager {
     const carts = JSON.parse(content);
 
     const cartIndex = carts.findIndex((c) => c.id == id);
-    if (cartIndex === -1) {
+    if (cartIndex < 0) {
       throw new Error("Carrito no encontrado");
     }
 
     const cart = carts[cartIndex];
-    const productIndex = cart.products.findIndex((p) => p.product == productId);
-
-    if (productIndex >= 0) {
-      cart.products[productIndex].quantity += 1;
+    const product = cart.products.find((p) => p.product == productId);
+    if (product) {
+      product.quantity++;
     } else {
       cart.products.push({ product: productId, quantity: 1 });
     }
 
     carts[cartIndex] = cart;
-
     await fs.promises.writeFile(this.path, JSON.stringify(carts, null, "\t"));
+    return cart;
   }
 }
 

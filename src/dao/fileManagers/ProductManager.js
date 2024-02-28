@@ -73,7 +73,7 @@ class ProductManager {
     const product = products.find((p) => p.id == id);
     return product;
   }
-  // Ej cómo ahorrar código
+
   async getProductsFromFile() {
     const content = await fs.promises.readFile(this.path, "utf-8");
     const products = JSON.parse(content);
