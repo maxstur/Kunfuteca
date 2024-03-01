@@ -41,26 +41,22 @@ class CartsManager {
     return cart || { error: "Carrito no encontrado" };
   }
 
-  async addProduct(id, productId) {
+  async addProduct(cid, productId) {
     const content = await fs.promises.readFile(this.path, "utf-8");
     const carts = JSON.parse(content);
 
-    const cartIndex = carts.findIndex((c) => c.id == id);
-    if (cartIndex < 0) {
-      throw new Error("Carrito no encontrado");
-    }
+    const cartIndex = carts.findIndex((p) => p.id == productId);
+    const cart = { ...carts[col_index] };
 
-    const cart = carts[cartIndex];
-    const product = cart.products.find((p) => p.product == productId);
-    if (product) {
-      product.quantity++;
+    const index = cart.product.findIndex((p) => p.product == productId);
+    if (index >= 0) {
+      cart.product[index].quantity += 1;
     } else {
-      cart.products.push({ product: productId, quantity: 1 });
+      cart.product.push({ product: productId, quantity: 1 });
     }
 
-    carts[cartIndex] = cart;
+    cart[col_index] = cart;
     await fs.promises.writeFile(this.path, JSON.stringify(carts, null, "\t"));
-    return cart;
   }
 }
 

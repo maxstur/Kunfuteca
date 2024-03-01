@@ -52,11 +52,27 @@ router.post("/:cid/product/:pid", async (req, res) => {
       res.status(400).send({ message: "Producto no encontrado" });
       return;
     }
-  
-    await cartsManager.addProduct(cid, productId); // Espera a que se complete la operación
+
+    await cartsManager.addProduct(cid, productId);
     res.send({ status: "Producto agregado al carrito" });
   } catch (error) {
     res.status(500).send({ error: "Error al agregar producto al carrito" });
+  }
+});
+
+router.delete("/:cid/product/:pid", async (req, res) => {
+  const cid = req.params.cid;
+  const pid = req.params.pid;
+  try {
+    const cart = await cartsManager.getCart(cid);
+    if (!cart) {
+      res.status(400).send({ message: "Carrito no encontrado" });
+      return;
+    }
+    await cartsManager.deleteProduct(cid, pid);
+    res.send({ status: "Elemento eliminado del carrito" });
+  } catch (error) {
+    res.status(500).send({ error: "Error al eliminar elemento del carrito" });
   }
 });
 

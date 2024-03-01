@@ -2,36 +2,41 @@ const cartModel = require("../models/cart");
 
 class CartsManager {
   async addCart() {
-    const Cart = { products: [] };
-    await cartModel.create(Cart);
+    await CartModel.create({ products: [] });
+  }
+
+  async getAllCarts() {
+    const carts = await CartModel.find();
+    return carts;
   }
 
   async getCart(id) {
-    const cart = await cartModel.findOne({ _id: id });
+    const cart = await CartModel.findById(id);
     if (!cart) {
       throw new Error("Carrito no encontrado");
     }
     return cart;
   }
 
-  async getAllCarts() {
-    const carts = await cartModel.find();
-    return carts;
-  }
+  async addProduct(cid, productId) {
+    const cart = await this.getCart(cid);
 
-  async addProduct(id, productId) {
-    const cart = await this.getCart(id);
-
-    const product = cart.products.find((p) => p.product === productId);
-    if (product) {
-      product.quantity++;
+    const productIndex = cart.products.findIndex((p) => p.product == productId);
+    if (productIndex >= 0) {
+      cart.products[productIndex].quantity += 1;
     } else {
       cart.products.push({ product: productId, quantity: 1 });
     }
-    await cartModel.updateOne({ _id: id, }, cart)
+
+    await cartModel.updateOne({ _id: cid }, cart);
+  }
+
+  async deleteProduct(cid, pid) {
+    const cart = await this.getCart(cid);
+    cart.products = cart.products.filter((p) => p.product !== pid);
+    await cart.save();
+    return cart;
   }
 }
-
-
 
 module.exports = CartsManager;
