@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require("express");
 const port = 8080;
 const productsRouter = require("./routes/products.router");
@@ -6,8 +7,8 @@ const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
-const ProductManager = require("./dao/dbManagers/ProductManager");
 const mongoose = require("mongoose");
+const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
 const connectDB = require('./dbConnect/db');
@@ -47,13 +48,13 @@ io.on("connection", async (socket) => {
   socket.on("createNewProduct", async (newProduct) => {
     await productManager.addProduct(newProduct);
     const products = await productManager.getProducts();
-    io.emit("Lista actualizada", { products });
+    io.emit("Lista actualizada", { products: products });
   });
 
   socket.on("delete product", async ({ id }) => {
     await productManager.deleteProduct(id);
     const products = await productManager.getProducts();
-    io.emit("Lista actualizada", { products });
+    io.emit("Lista actualizada", { products: products });
   });
 
   /* Chat */

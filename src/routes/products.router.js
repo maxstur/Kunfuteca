@@ -12,14 +12,14 @@ router.post("/", async (req, res) => {
     await productManager.addProduct(newProduct);
 
     // socket.emit("createNewProduct", newProduct);
-    req.io.emit('lista actualizada', {products: await productManager.getProducts()});
+    req.io.emit('lista actualizada', {products: products});
 
     // res.send({ status: "Elemento agregado exitosamente" });
 
     res.redirect("/realtimeproducts");
   } catch (error) {
-    console.error("Error al agregar producto:", error);
-    res.status(500).send({ error: "Error al agregar producto" });
+    console.error("Error al agregar nuevo elemento:", error);
+    res.status(500).send({ error: "Error al agregar nuevo elemento" });
   }
 });
 

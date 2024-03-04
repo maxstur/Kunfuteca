@@ -7,32 +7,16 @@ class ProductManager {
     fs.writeFileSync(filePath, "[]");
   }
 
-  async addProduct(productData) {
-    const { title, description, code, price, stock, category, status } =
-      productData;
-    const requiredFields = [title, description, code, price, stock, category];
-    if (requiredFields.some((field) => !field)) {
-      throw new Error("Todos los campos son necesarios");
-    }
+  async addProduct(product) {
+    const content = await fs.promises.readFile(this.path, "utf-8");
+    const products = JSON.parse(content);
 
-    const fileContent = await fs.promises.readFile(this.path, "utf-8");
-    const products = JSON.parse(fileContent);
-    const newProduct = {
-      id: ++this.id,
-      title,
-      description,
-      code,
-      price,
-      stock,
-      category: category || "",
-      status: status || true,
-    };
-    products.push(newProduct);
+    product.id = ++ProductManager.id;
+    products.push(product);
     await fs.promises.writeFile(
       this.path,
       JSON.stringify(products, null, "\t")
     );
-    return { status: "Producto agregado exitosamente" };
   }
 
   async getProducts() {
@@ -57,16 +41,11 @@ class ProductManager {
   async updateProduct(id, newProduct) {
     const products = await this.getProductsFromFile();
     const index = products.findIndex((p) => p.id == id);
-    if (index >= 0) {
-      products[index] = { ...products[index], ...newProduct };
-      await fs.promises.writeFile(
-        this.path,
-        JSON.stringify(products, null, "\t")
-      );
-      return products[index];
-    } else {
-      throw new Error("Producto no encontrado");
-    }
+    products[index] = { ...products[index], ...newProduct };
+    await fs.promises.writeFile(
+      this.path,
+      JSON.stringify(products, null, "\t")
+    );
   }
 
   async deleteProduct(id) {

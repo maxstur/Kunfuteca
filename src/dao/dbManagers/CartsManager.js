@@ -2,40 +2,32 @@ const cartModel = require("../models/cart");
 
 class CartsManager {
   async addCart() {
-    await CartModel.create({ products: [] });
-  }
-
-  async getAllCarts() {
-    const carts = await CartModel.find();
-    return carts;
+    const cart = { products: [] };
+    await cartModel.create(cart);
   }
 
   async getCart(id) {
-    const cart = await CartModel.findById(id);
-    if (!cart) {
-      throw new Error("Carrito no encontrado");
-    }
+    const cart = await cartModel.findById({ _id: id });
     return cart;
   }
 
-  async addProduct(cid, productId) {
-    const cart = await this.getCart(cid);
+  async getAllCarts() {
+    const carts = await cartModel.find();
+    return carts;
+  }
 
-    const productIndex = cart.products.findIndex((p) => p.product == productId);
-    if (productIndex >= 0) {
-      cart.products[productIndex].quantity += 1;
+  async addProduct(id, productId) {
+    const cart = await this.getCart(id);
+
+    const index = cart.products.findIndex((p) => p.product == productId);
+    if (index >= 0) {
+      cart.products[index].quantity += 1;
     } else {
       cart.products.push({ product: productId, quantity: 1 });
     }
 
-    await cartModel.updateOne({ _id: cid }, cart);
-  }
-
-  async deleteProduct(cid, pid) {
-    const cart = await this.getCart(cid);
-    cart.products = cart.products.filter((p) => p.product !== pid);
-    await cart.save();
-    return cart;
+    const serializedCart = cart.toObject(); // Convertir el documento de Mongoose a objeto JavaScript
+    await cartModel.updateOne({ _id: id }, serializedCart);
   }
 }
 

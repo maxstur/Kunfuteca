@@ -38,15 +38,19 @@ class CartsManager {
 
     const cart = carts.find((c) => c.id == id);
 
-    return cart || { error: "Carrito no encontrado" };
+    if (!cart) {
+      throw new Error("Carrito no encontrado");
+    } else {
+      return cart;
+    }
   }
 
-  async addProduct(cid, productId) {
+  async addProduct(id, productId) {
     const content = await fs.promises.readFile(this.path, "utf-8");
     const carts = JSON.parse(content);
 
-    const cartIndex = carts.findIndex((p) => p.id == productId);
-    const cart = { ...carts[col_index] };
+    const cartIndex = carts.findIndex((p) => p.id == id);
+    const cart = { ...carts[cartIndex] };
 
     const index = cart.product.findIndex((p) => p.product == productId);
     if (index >= 0) {
@@ -55,7 +59,7 @@ class CartsManager {
       cart.product.push({ product: productId, quantity: 1 });
     }
 
-    cart[col_index] = cart;
+    carts[cartIndex] = cart;
     await fs.promises.writeFile(this.path, JSON.stringify(carts, null, "\t"));
   }
 }

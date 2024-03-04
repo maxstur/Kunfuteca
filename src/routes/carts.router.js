@@ -3,10 +3,10 @@ const CartsManager = require("../dao/dbManagers/CartsManager");
 const ProductManager = require("../dao/dbManagers/ProductManager");
 const router = Router();
 
-const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
 const productManager = new ProductManager(
   __dirname + "/../files/products.json"
 );
+const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
 
 router.post("/", async (req, res) => {
   try {
@@ -36,28 +36,24 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/:cid/product/:pid", async (req, res) => {
-  const cid = req.params.cid;
+router.post("/:id/product/:pid", async (req, res) => {
+  const id = req.params.id;
   const productId = req.params.pid;
 
-  try {
-    const cart = await cartsManager.getCart(cid);
-    if (!cart) {
-      res.status(400).send({ message: "Carrito no encontrado" });
-      return;
-    }
-
-    const product = await productManager.getProduct(productId);
-    if (!product) {
-      res.status(400).send({ message: "Producto no encontrado" });
-      return;
-    }
-
-    await cartsManager.addProduct(cid, productId);
-    res.send({ status: "Producto agregado al carrito" });
-  } catch (error) {
-    res.status(500).send({ error: "Error al agregar producto al carrito" });
+  const cart = await cartsManager.getCart(id);
+  const product = await productManager.getProduct(productId);
+  if (!cart) {
+    res.status(400).send({ message: "Carrito no encontrado" });
+    return;
   }
+  if (!product) {
+    res.status(400).send({ message: "Producto no encontrado" });
+    return;
+  }
+
+  await cartsManager.addProduct(id, productId);
+  
+  res.send({ status: "Producto agregado al carrito" });
 });
 
 router.delete("/:cid/product/:pid", async (req, res) => {
