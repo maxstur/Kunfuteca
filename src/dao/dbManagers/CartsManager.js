@@ -26,8 +26,7 @@ class CartsManager {
       cart.products.push({ product: productId, quantity: 1 });
     }
 
-    const serializedCart = cart.toObject(); // Convertir el documento de Mongoose a objeto JavaScript
-    await cartModel.updateOne({ _id: id }, serializedCart);
+    await cartModel.updateOne({ _id: id }, cart);
   }
 }
 

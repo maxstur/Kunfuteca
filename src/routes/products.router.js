@@ -11,10 +11,8 @@ router.post("/", async (req, res) => {
     console.log("Datos del producto recibidos:", newProduct);
     await productManager.addProduct(newProduct);
 
-    // socket.emit("createNewProduct", newProduct);
+    const products = await productManager.getProducts();
     req.io.emit('lista actualizada', {products: products});
-
-    // res.send({ status: "Elemento agregado exitosamente" });
 
     res.redirect("/realtimeproducts");
   } catch (error) {

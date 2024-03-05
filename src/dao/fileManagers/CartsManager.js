@@ -52,11 +52,11 @@ class CartsManager {
     const cartIndex = carts.findIndex((p) => p.id == id);
     const cart = { ...carts[cartIndex] };
 
-    const index = cart.product.findIndex((p) => p.product == productId);
+    const index = cart.products.findIndex((p) => p.product == productId);
     if (index >= 0) {
-      cart.product[index].quantity += 1;
+      cart.products[index].quantity += 1;
     } else {
-      cart.product.push({ product: productId, quantity: 1 });
+      cart.products.push({ product: productId, quantity: 1 });
     }
 
     carts[cartIndex] = cart;

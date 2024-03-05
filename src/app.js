@@ -61,9 +61,9 @@ io.on("connection", async (socket) => {
   const messages = await messageModel.find().lean();
   socket.emit("chat messages", { messages });
 
-  socket.on("new message", async ({ messageInfo }) => {
+  socket.on("new message", async ( messageInfo ) => {
     await messageModel.create(messageInfo);
-    const messages = await messageModel.find().lean();
+    const messages = await messageModel.find().lean(); 
     io.emit("chat messages", { messages });
   });
 });
