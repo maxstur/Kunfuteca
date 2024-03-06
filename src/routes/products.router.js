@@ -21,17 +21,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    let products = await productManager.getProducts();
-
-    const { limit } = req.query;
-    if (limit) {
-      products = products.slice(0, limit);
-    }
-    res.send({ products: products });
+      const { limit = 10, page = 1, sort, query } = req.query;
+      const productsData = await productManager.getProducts({ limit, page, sort, query });
+      res.json(productsData);
   } catch (error) {
-    res.status(500).send({ error: "Error al obtener productos" });
+      console.error('Error al obtener productos', error);
+      res.status(500).json({ error: 'Error al obtener productos' });
   }
 });
 

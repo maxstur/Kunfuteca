@@ -1,0 +1,24 @@
+<h1>Productos</h1>
+    {{#each productsData.payload}}
+        <div>
+            <h2>{{this.title}}</h2>
+            <p>{{this.description}}</p>
+            <p>Precio: {{this.price}}</p>
+            <p>Categoría: {{this.category}}</p>
+            <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
+        </div>
+    {{/each}}
+
+    <div>
+        <p>Página: {{productsData.page}}</p>
+        <p>Total de páginas: {{productsData.totalPages}}</p>
+        <p>Página anterior: <a href="{{productsData.prevLink}}">Anterior</a></p>
+        <p>Página siguiente: <a href="{{productsData.nextLink}}">Siguiente</a></p>
+    </div>
+
+    <script>
+        function addToCart(productId) {
+            // Aquí puedes implementar la lógica para agregar el producto al carrito
+            console.log('Agregando producto al carrito:', productId);
+        }
+    </script>

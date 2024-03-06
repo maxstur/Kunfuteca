@@ -19,10 +19,64 @@ class ProductManager {
     );
   }
 
-  async getProducts() {
-    const content = await fs.promises.readFile(this.path, "utf-8");
-    const products = JSON.parse(content);
-    return products;
+  async getProducts(limit = 10, page = 1, sort, query) {
+    try {
+      const content = await fs.promises.readFile(this.path, "utf-8");
+      let products = JSON.parse(content);
+
+      // Aplicar limit y offset para la paginación
+      products = products.slice((page - 1) * limit, page * limit);
+
+      // Aplicar filtros por query
+      if (query) {
+        products = products.filter((product) =>
+          product.title.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+
+      // Ordenamiento
+      if (sort) {
+        products.sort((a, b) => {
+          return sort === "desc" ? b.price - a.price : a.price - b.price;
+        });
+      }
+
+      // Paginación
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+      const totalProducts = products.length;
+      const totalPages = Math.ceil(totalProducts / limit);
+      const results = products.slice(startIndex, endIndex);
+
+      return {
+        status: "success",
+        payload: results,
+        totalPages,
+        prevPage: page > 1 ? page - 1 : null,
+        nextPage: page < totalPages ? page + 1 : null,
+        page,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+        prevLink:
+          page > 1
+            ? `/api/products?limit=${limit}&page=${
+                page - 1
+              }&sort=${sort}&query=${query}`
+            : null,
+        nextLink:
+          page < totalPages
+            ? `/api/products?limit=${limit}&page=${
+                page + 1
+              }&sort=${sort}&query=${query}`
+            : null,
+      };
+    } catch (error) {
+      console.error("Error al obtener productos", error);
+      return {
+        status: "error",
+        message: "Error al obtener productos",
+      };
+    }
   }
 
   async getProduct(id) {
