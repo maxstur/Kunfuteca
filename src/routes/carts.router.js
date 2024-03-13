@@ -30,9 +30,9 @@ router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const cart = await cartsManager.getCart(id);
-    res.send(cart);
+    res.send({status: "success", products: cart.products});
   } catch (error) {
-    res.status(500).send({ error: "Error al obtener carrito" });
+    res.status(500).send({status: "error", error: "Error al obtener carrito" });
   }
 });
 
@@ -71,5 +71,39 @@ router.delete("/:cid/product/:pid", async (req, res) => {
     res.status(500).send({ error: "Error al eliminar elemento del carrito" });
   }
 });
+
+router.put('/:id/product/:pid', async (req, res)=>{
+  const {id, pid} = req.params;
+  const quantity = req.body.quantity
+  
+  try {
+      const result = await cartsManager.updateQuantity(id, pid, quantity)
+      res.send(result)
+  } catch (error) {
+      return res.status(500).send({status:'error', error: error.message})
+  }
+})
+
+router.put('/:id/', async (req, res)=>{ //actualizar contenido
+  const {id} = req.params;
+
+  try {
+      const result = await cartsManager.updateCartProducts(id, req.body)
+      res.send(result)
+  } catch (error) {
+      return res.status(500).send({status:'error', error: error.message})
+  }
+})
+
+router.delete('/:id', async (req, res)=>{
+  const {id} = req.params; 
+  try {
+      const result = await cartsManager.deleteAllProducts(id)
+      res.send(result)
+  } catch (error) {
+      return res.status(500).send({status:'error', error:error.message})
+  }
+})
+
 
 module.exports = router;

@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
     await productManager.addProduct(newProduct);
 
     const products = await productManager.getProducts();
-    req.io.emit('lista actualizada', {products: products});
+    req.io.emit("lista actualizada", { products: products });
 
     res.redirect("/realtimeproducts");
   } catch (error) {
@@ -21,31 +21,23 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
+  let query = req.query;
   try {
-      const { limit = 10, page = 1, sort, query } = req.query;
-      const productsData = await productManager.getProducts({ limit, page, sort, query });
-      res.json(productsData);
+    let { docs, ...rest } = await manager.getProducts(query);
+    res.send({ status: "success", payload: docs, ...rest });
   } catch (error) {
-      console.error('Error al obtener productos', error);
-      res.status(500).json({ error: 'Error al obtener productos' });
+    res.status(500).send({ status: "error", error: error.message });
   }
 });
 
 router.get("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const product = await productManager.getProduct(id);
-
-    if (product) {
-      res.send({ product });
-    } else {
-      res.status(404).send({ message: "Producto no encontrado" });
-    }
+    let product = await productManager.getProduct(req.params.id);
   } catch (error) {
-    console.error("Error al obtener producto:", error);
-    res.status(500).send({ error: "Error al obtener producto" });
+    res.status(500).send({ status: "error", error: error.message });
   }
+  res.send({ product: product });
 });
 
 router.put("/:pid", async (req, res) => {
