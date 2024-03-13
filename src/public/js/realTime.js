@@ -52,5 +52,5 @@ socket.on("Lista actualizada", ({ products }) => {
 });
 
 function deleteProduct(id) {
-  socket.emit("delete product", { id: id });
+  socket.emit("producro eliminado", { id: id });
 }

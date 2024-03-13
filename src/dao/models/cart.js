@@ -4,7 +4,7 @@ const cartSchema = new mongoose.Schema({
   products: {
     type: [
       {
-        product: String,
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "products" },
         quantity: Number,
       },
     ],

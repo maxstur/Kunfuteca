@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
     await productManager.addProduct(newProduct);
 
     const products = await productManager.getProducts();
-    req.io.emit("lista actualizada", { products: products });
+    req.io.emit("Lista actualizada", { products: products });
 
     res.redirect("/realtimeproducts");
   } catch (error) {

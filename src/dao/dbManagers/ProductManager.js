@@ -5,27 +5,22 @@ class ProductManager {
     await productModel.create(productData);
   }
 
-  async getProducts(queryParams = {}) {
+  async getProducts(queryParams = null) {
     let result = [];
     let opt = {};
+    if (queryParams) {
+      let paginationOpt = {
+        page: queryParams.page || 1,
+        limit: queryParams.limit || 10,
+        lean: true,
+      };
+      if (queryParams.sort) {
+        paginationOpt.sort = { price: queryParams.sort == "asc" ? 1 : -1 };
+      }
 
-    const { page = 1, limit = 10, sort, query } = queryParams;
-
-    let paginationOpt = {
-      page: parseInt(page, 10) || 1,
-      limit: parseInt(limit, 10) || 10,
-      lean: true,
-    };
-
-    if (sort) {
-      paginationOpt.sort = { price: sort == "asc" ? 1 : -1 };
-    }
-
-    if (query) {
-      opt = this.getOptionsObject(query);
-    }
-
-    try {
+      if (queryParams.query) {
+        opt = this.getOptionsObject(queryParams.query);
+      }
       result = await productModel.paginate(opt, paginationOpt);
 
       if (
@@ -35,21 +30,24 @@ class ProductManager {
       ) {
         throw new Error("Page does not exist");
       }
+    } else {
+      result = await productModel.find().lean();
+    }
 
-      // Construir enlaces de paginación
-      const queryWithoutPage = { ...queryParams };
-      delete queryWithoutPage.page;
-      const queryString = new URLSearchParams(queryWithoutPage).toString();
-      const baseLink = "/products";
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      let extraLinkParams = "";
+      Object.keys(queryParams).forEach((key) => {
+        if (key != "page") {
+          extraLinkParams += `&${key}=${queryParams[key]}`;
+        }
+      });
+    
       result.prevLink = result.hasPrevPage
-        ? `${baseLink}?page=${result.prevPage}&${queryString}`
+        ? `/products?page=${result.prevPage}${extraLinkParams}`
         : "";
       result.nextLink = result.hasNextPage
-        ? `${baseLink}?page=${result.nextPage}&${queryString}`
+        ? `/products?page=${result.nextPage}${extraLinkParams}`
         : "";
-    } catch (error) {
-      console.error("Error al obtener productos:", error);
-      throw new Error("Error al obtener productos");
     }
 
     return result;
@@ -64,6 +62,12 @@ class ProductManager {
         $or: [
           { description: new RegExp(query) },
           { category: new RegExp(query) },
+          { title: new RegExp(query) },
+          { code: new RegExp(query) },
+          { stock: new RegExp(query) },
+          { price: new RegExp(query) },
+          { status: new RegExp(query) },
+          { id: new RegExp(query) },
         ],
       };
       return opt;

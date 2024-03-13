@@ -1,0 +1,15 @@
+<h1>Cart {{_id}}</h1>
+
+{{#each products}}
+    <div>
+        <h3>{{this.product.description}}</h3>
+        <p>title: {{this.product.title}}</p>
+        <p>quantity: {{this.quantity}}</p>
+        <p>code: {{this.product.code}}</p>
+        <p>category: {{this.product.category}}</p>
+        <p>price: {{this.product.price}}</p>
+        <p>stock: {{this.product.stock}}</p>
+        <button onclick="deleteProduct('{{this._id}}')">Delete</button>
+    </div>
+    <br><br>
+{{/each}}
