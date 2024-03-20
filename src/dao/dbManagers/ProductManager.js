@@ -6,21 +6,26 @@ class ProductManager {
   }
 
   async getProducts(queryParams = null) {
-    let result = [];
+    let result = {};
     let opt = {};
+    let paginationOpt = {
+      page: 1,
+      limit: 10,
+      lean: true,
+    };
+
     if (queryParams) {
-      let paginationOpt = {
-        page: queryParams.page || 1,
-        limit: queryParams.limit || 10,
-        lean: true,
-      };
+      paginationOpt.page = parseInt(queryParams.page) || 1;
+      paginationOpt.limit = parseInt(queryParams.limit) || 10;
+
       if (queryParams.sort) {
-        paginationOpt.sort = { price: queryParams.sort == "asc" ? 1 : -1 };
+        paginationOpt.sort = { price: queryParams.sort === "asc" ? 1 : -1 };
       }
 
       if (queryParams.query) {
         opt = this.getOptionsObject(queryParams.query);
       }
+
       result = await productModel.paginate(opt, paginationOpt);
 
       if (
@@ -31,22 +36,22 @@ class ProductManager {
         throw new Error("Page does not exist");
       }
     } else {
-      result = await productModel.find().lean();
+      result.docs = await productModel.find().lean();
     }
 
     if (queryParams && Object.keys(queryParams).length > 0) {
       let extraLinkParams = "";
       Object.keys(queryParams).forEach((key) => {
-        if (key != "page") {
+        if (key !== "page") {
           extraLinkParams += `&${key}=${queryParams[key]}`;
         }
       });
-    
-      result.prevLink = result.hasPrevPage
-        ? `/products?page=${result.prevPage}${extraLinkParams}`
+
+      result.previousLink = result.hasPrevPage
+        ? `/products?page=${result.prevPage}&limit=${paginationOpt.limit}${extraLinkParams}`
         : "";
       result.nextLink = result.hasNextPage
-        ? `/products?page=${result.nextPage}${extraLinkParams}`
+        ? `/products?page=${result.nextPage}&limit=${paginationOpt.limit}${extraLinkParams}`
         : "";
     }
 
@@ -60,6 +65,7 @@ class ProductManager {
     } catch (error) {
       const opt = {
         $or: [
+          { id: new RegExp(query) },
           { description: new RegExp(query) },
           { category: new RegExp(query) },
           { title: new RegExp(query) },
@@ -67,7 +73,6 @@ class ProductManager {
           { stock: new RegExp(query) },
           { price: new RegExp(query) },
           { status: new RegExp(query) },
-          { id: new RegExp(query) },
         ],
       };
       return opt;
