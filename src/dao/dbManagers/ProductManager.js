@@ -6,26 +6,21 @@ class ProductManager {
   }
 
   async getProducts(queryParams = null) {
-    let result = {};
+    let result = [];
     let opt = {};
-    let paginationOpt = {
-      page: 1,
-      limit: 10,
-      lean: true,
-    };
-
     if (queryParams) {
-      paginationOpt.page = parseInt(queryParams.page) || 1;
-      paginationOpt.limit = parseInt(queryParams.limit) || 10;
-
+      let paginationOpt = {
+        page: queryParams.page || 1,
+        limit: queryParams.limit || 10,
+        lean: true,
+      };
       if (queryParams.sort) {
-        paginationOpt.sort = { price: queryParams.sort === "asc" ? 1 : -1 };
+        paginationOpt.sort = { price: queryParams.sort == "asc" ? 1 : -1 };
       }
 
       if (queryParams.query) {
         opt = this.getOptionsObject(queryParams.query);
       }
-
       result = await productModel.paginate(opt, paginationOpt);
 
       if (
@@ -36,22 +31,22 @@ class ProductManager {
         throw new Error("Page does not exist");
       }
     } else {
-      result.docs = await productModel.find().lean();
+      result = await productModel.find().lean();
     }
 
     if (queryParams && Object.keys(queryParams).length > 0) {
       let extraLinkParams = "";
       Object.keys(queryParams).forEach((key) => {
-        if (key !== "page") {
+        if (key != "page") {
           extraLinkParams += `&${key}=${queryParams[key]}`;
         }
       });
 
-      result.previousLink = result.hasPrevPage
-        ? `/products?page=${result.prevPage}&limit=${paginationOpt.limit}${extraLinkParams}`
+      result.prevLink = result.hasPrevPage
+        ? `/products?page=${result.prevPage}${extraLinkParams}`
         : "";
       result.nextLink = result.hasNextPage
-        ? `/products?page=${result.nextPage}&limit=${paginationOpt.limit}${extraLinkParams}`
+        ? `/products?page=${result.nextPage}${extraLinkParams}`
         : "";
     }
 
