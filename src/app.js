@@ -1,6 +1,7 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const port = 8080;
 const productsRouter = require("./routes/products.router");
 const viewsRouter = require("./routes/views.router");
@@ -11,18 +12,23 @@ const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
-const connectDB = require('./dbConnect/db');
-
+const connectDB = require("./dbConnect/db");
+const session = require("express-session");
 
 // Llama a la función connectDB para conectar con MongoDB
 connectDB();
 
 const app = express();
 
+app.use(cookieParser("coderSecret"));
+app.use(
+  session({ secret: "zFckEEhSecret", resave: true, saveUninitialized: true })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuración del motor de plantillas, Handlebars
+
 app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
@@ -35,6 +41,7 @@ const serverHttp = app.listen(port, () => {
 });
 
 // sockets.io
+
 const io = new Server(serverHttp);
 
 app.use((req, res, next) => {
@@ -58,13 +65,81 @@ io.on("connection", async (socket) => {
   });
 
   /* Chat */
+
   const messages = await messageModel.find().lean();
   socket.emit("chat messages", { messages });
 
-  socket.on("new message", async ( messageInfo ) => {
+  socket.on("new message", async (messageInfo) => {
     await messageModel.create(messageInfo);
-    const messages = await messageModel.find().lean(); 
+    const messages = await messageModel.find().lean();
     io.emit("chat messages", { messages });
+  });
+});
+
+/** Cookies */
+
+app.get("/viewCookiesHandlebars", (req, res) => {
+  res.render("cookies");
+});
+
+app.post("/cookies", (req, res) => {
+  const data = req.body;
+  res.cookie("coderCookie", data, { maxAge: 120 * 1000, signed: true });
+  res.send({ status: "success", message: "Cookies enviadas" });
+});
+
+app.get("/cookies", (req, res) => {
+  const cookies = req.signedCookies.cookies;
+  res.send({ status: "success", payload: cookies });
+});
+
+app.get("/clearCookie", (req, res) => {
+  /** Es el /* del ej del profesor. Para que se limpie la cookie */
+  res.clearCookie("coderCookie");
+  res.send("Cookie eliminada");
+});
+
+/** Sessions */
+
+app.get("/session", (req, res) => {
+  if (req.session.conuter) {
+    req.session.conuter++;
+    res.send(`Views: ${req.session.conuter}`);
+  } else {
+    req.session.conuter = 1;
+    res.send("Welcome! Your session has been created");
+  }
+});
+
+const users = [
+  { username: "Elba", password: "gallo", isAdmin: true },
+  { username: "NotAdmin", password: "gallo", isAdmin: false },
+];
+
+app.get("/login", (req, res) => {
+  const { username, password } = req.query;
+
+  const user = users.find(
+    (u) => u.username == username && u.password == password
+  );
+  if (!user) {
+    return res.status(400).send("Wrong credentials");
+  }
+
+  req.session.username = username;
+  req.session.admin = user.isAdmin;
+  req.session.visitCounter = 1;
+
+  res.send({ status: "Logged in", isAdmin: req.session.admin });
+});
+
+app.get("/deleteSession", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.send({ status: "error", message: err });
+    } else {
+      res.send("Session deleted");
+    }
   });
 });
 
@@ -72,3 +147,21 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/", viewsRouter);
+
+function autenticate(req, res, next) {
+  if (req.session.username) {
+    next();
+  }
+  res.status(400).send("Wrong credentials, not authenticated ");
+}
+
+app.get("/private", autenticate, (req, res) => {
+
+  const name = req.session.name || "";
+
+  req.session.visitCounter++;
+  res.send(` Welcome ${name}
+    Private, you cann see it because of yout loogedin. 
+    Views: ${req.session.visitCounter}
+    `);
+});
