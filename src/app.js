@@ -14,18 +14,32 @@ const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
 const connectDB = require("./dbConnect/db");
 const session = require("express-session");
+const FileStore = require("session-file-store");
+const MongoStore = require("connect-mongo");
 
 // Llama a la función connectDB para conectar con MongoDB
 connectDB();
 
 const app = express();
 
-app.use(cookieParser("coderSecret"));
-app.use(
-  session({ secret: "zFckEEhSecret", resave: true, saveUninitialized: true })
-);
+/** Middlewares */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const fileStore = FileStore(session);
+app.use(cookieParser("coderSecret"));
+app.use(
+  session({
+    secret: "zFckEEhSecret",
+    resave: false,
+    saveUninitialized: false,
+    store: new fileStore({
+      path: `${__dirname}/fileSession`,
+      ttl: 100,
+      retries: 0,
+    }),
+  })
+);
 
 // Configuración del motor de plantillas, Handlebars
 
@@ -143,11 +157,6 @@ app.get("/deleteSession", (req, res) => {
   });
 });
 
-// Otras configuraciones y rutas
-app.use("/api/products", productsRouter);
-app.use("/api/carts", cartsRouter);
-app.use("/", viewsRouter);
-
 function autenticate(req, res, next) {
   if (req.session.username) {
     next();
@@ -156,12 +165,19 @@ function autenticate(req, res, next) {
 }
 
 app.get("/private", autenticate, (req, res) => {
-
   const name = req.session.name || "";
 
   req.session.visitCounter++;
-  res.send(` Welcome ${name}
-    Private, you cann see it because of yout loogedin. 
-    Views: ${req.session.visitCounter}
+  res.send(` 
+    <h1>Welcome ${name} </h1>
+    <h3>You can see this cause of you'r looged in. </h3>
+    <p>Visits ${req.session.visitCounter} times</p>
     `);
 });
+
+// Otras configuraciones y rutas
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
+app.use("/", viewsRouter);
+
+

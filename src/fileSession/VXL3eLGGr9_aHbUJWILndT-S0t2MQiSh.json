@@ -1,0 +1,13 @@
+{
+  "cookie": {
+    "originalMaxAge": null,
+    "expires": null,
+    "httpOnly": true,
+    "path": "/"
+  },
+  "conuter": 6,
+  "__lastAccess": 1712271190209,
+  "username": "Elba",
+  "admin": true,
+  "visitCounter": 1
+}
