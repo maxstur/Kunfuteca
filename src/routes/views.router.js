@@ -74,4 +74,13 @@ viewsRouter.get("/register", (req, res) => {
   res.render("register", {});
 });
 
+/** Login */
+
+viewsRouter.get("/login", (req, res) => {
+  res.render("login", {});
+})
+
+viewsRouter.get("/profile", (req, res) => {
+  res.send("my profile",);
+})
 module.exports = router;

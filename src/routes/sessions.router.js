@@ -4,21 +4,43 @@ const userModel = require("../dao/models/users");
 const sessionsRouter = Router();
 
 sessionsRouter.post("/register", async (req, res) => {
-  const { first_name, last_name, email, age, password } = req.body;
+  const { first_name, last_name, email, age, password, confirm_password } =
+    req.body;
 
-  if (!first_name || !last_name || !email || !age || !password) {
+  if (
+    !first_name ||
+    !last_name ||
+    !email ||
+    !age ||
+    !password ||
+    !confirm_password
+  ) {
     return res
       .status(400)
       .send({ status: "error", error: "All fields are required" });
   }
-  const result = await userModel.create({
-    first_name,
-    last_name,
-    email,
-    age,
-    password,
-  });
-  res.send({ status: "success", message: "User created" });
+  if (password !== confirm_password) {
+    return res
+      .status(400)
+      .send({ status: "error", error: "Passwords do not match" });
+  }
+
+  try {
+    const user = await userModel.create({
+      first_name,
+      last_name,
+      email,
+      age,
+      password,
+    });
+    res.send({ status: "success", message: "User created" });
+  } catch (error) {
+    res.send({
+      status: "error",
+      error: error.message,
+      message: "User already exists",
+    });
+  }
 });
 
 sessionsRouter.post("/login", async (req, res) => {

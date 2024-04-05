@@ -13,7 +13,7 @@ loginForm.addEventListener("submit", (event) => {
         },
     }).then(res => {
         if(res.status == 200 ){
-            window.location.replace('/')
+            window.location.replace('/profile')
         }
     })
 })
