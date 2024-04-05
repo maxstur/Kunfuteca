@@ -9,6 +9,8 @@ const productManager = new ProductManager(
 
 const router = Router();
 
+/** views */
+
 router.get("/", async (req, res) => {
   const products = await productManager.getProducts();
   res.render("home", { products: products });
@@ -23,11 +25,9 @@ router.get("/chat", (req, res) => {
   res.render("chat", {});
 });
 
-/** views */
-
 router.get("/products", async (req, res) => {
   try {
-    const { docs,...rest } = await productManager.getProducts(req.query);
+    const { docs, ...rest } = await productManager.getProducts(req.query);
     res.render("products", { products: docs, ...rest });
   } catch (error) {
     res.send({ status: "error", error: error.message });
@@ -65,6 +65,12 @@ router.get("/carts/:cid", async (req, res) => {
   } catch (error) {
     res.send({ status: "error", error: error.message });
   }
+});
+
+/** Register */
+
+router.get("/register", (req, res) => {
+  res.render("register", {});
 });
 
 module.exports = router;

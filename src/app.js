@@ -6,37 +6,41 @@ const port = 8080;
 const productsRouter = require("./routes/products.router");
 const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
+const sessionsRouter = require("./routes/sessions.router");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
-const connectDB = require("./dbConnect/db");
 const session = require("express-session");
-const FileStore = require("session-file-store");
 const MongoStore = require("connect-mongo");
 
-// Llama a la función connectDB para conectar con MongoDB
-connectDB();
-
 const app = express();
+
+/** DB Conection */
+mongoose
+  .connect(
+    `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/`
+  )
+  .then(() => console.log("DB connected"));
 
 /** Middlewares */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const fileStore = FileStore(session);
+// public
+app.use(express.static(`${__dirname}/public`));
+
 app.use(cookieParser("coderSecret"));
 app.use(
   session({
     secret: "zFckEEhSecret",
     resave: false,
     saveUninitialized: false,
-    store: new fileStore({
-      path: `${__dirname}/fileSession`,
-      ttl: 100,
-      retries: 0,
+    store: MongoStore.create({
+      mongoUrl: `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/`,
+      ttl: 3600,
     }),
   })
 );
@@ -47,9 +51,7 @@ app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
 
-// public
-app.use(express.static(`${__dirname}/public`));
-
+/**Port Config */
 const serverHttp = app.listen(port, () => {
   console.log(`Servidor Kunfuteando en: http://localhost:${port}`);
 });
@@ -113,71 +115,8 @@ app.get("/clearCookie", (req, res) => {
   res.send("Cookie eliminada");
 });
 
-/** Sessions */
-
-app.get("/session", (req, res) => {
-  if (req.session.conuter) {
-    req.session.conuter++;
-    res.send(`Views: ${req.session.conuter}`);
-  } else {
-    req.session.conuter = 1;
-    res.send("Welcome! Your session has been created");
-  }
-});
-
-const users = [
-  { username: "Elba", password: "gallo", isAdmin: true },
-  { username: "NotAdmin", password: "gallo", isAdmin: false },
-];
-
-app.get("/login", (req, res) => {
-  const { username, password } = req.query;
-
-  const user = users.find(
-    (u) => u.username == username && u.password == password
-  );
-  if (!user) {
-    return res.status(400).send("Wrong credentials");
-  }
-
-  req.session.username = username;
-  req.session.admin = user.isAdmin;
-  req.session.visitCounter = 1;
-
-  res.send({ status: "Logged in", isAdmin: req.session.admin });
-});
-
-app.get("/deleteSession", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.send({ status: "error", message: err });
-    } else {
-      res.send("Session deleted");
-    }
-  });
-});
-
-function autenticate(req, res, next) {
-  if (req.session.username) {
-    next();
-  }
-  res.status(400).send("Wrong credentials, not authenticated ");
-}
-
-app.get("/private", autenticate, (req, res) => {
-  const name = req.session.name || "";
-
-  req.session.visitCounter++;
-  res.send(` 
-    <h1>Welcome ${name} </h1>
-    <h3>You can see this cause of you'r looged in. </h3>
-    <p>Visits ${req.session.visitCounter} times</p>
-    `);
-});
-
 // Otras configuraciones y rutas
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/", viewsRouter);
-
-
+app.use("/api/sessions", sessionsRouter);
