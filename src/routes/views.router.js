@@ -8,6 +8,7 @@ const productManager = new ProductManager(
 );
 
 const router = Router();
+const viewsRouter = router;
 
 /** views */
 
@@ -69,7 +70,7 @@ router.get("/carts/:cid", async (req, res) => {
 
 /** Register */
 
-router.get("/register", (req, res) => {
+viewsRouter.get("/register", (req, res) => {
   res.render("register", {});
 });
 
