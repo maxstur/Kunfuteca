@@ -10,6 +10,22 @@ const productManager = new ProductManager(
 const router = Router();
 const viewsRouter = router;
 
+const publicAccess = (req, res, next) => {
+  if (req.session.user) {
+    res.redirect("/profile");
+  } else {
+    next();
+  }
+};
+
+const privateAccess = (req, res, next) => {
+  if (!req.session.user) {
+    console.log("Not logged in yet");
+    return res.redirect("/login");
+  }
+  next();
+};
+
 /** views */
 
 router.get("/", async (req, res) => {
@@ -70,17 +86,18 @@ router.get("/carts/:cid", async (req, res) => {
 
 /** Register */
 
-viewsRouter.get("/register", (req, res) => {
+viewsRouter.get("/register", publicAccess, (req, res) => {
   res.render("register", {});
 });
 
 /** Login */
 
-viewsRouter.get("/login", (req, res) => {
-  res.render("login", {});
-})
+viewsRouter.get("/login", publicAccess, (req, res) => {
+  res.render("login");
+});
 
-viewsRouter.get("/profile", (req, res) => {
-  res.send("my profile",);
-})
+viewsRouter.get("/profile", privateAccess, (req, res) => {
+  res.send("my profile", { user: req.session.user });
+});
+
 module.exports = router;

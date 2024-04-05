@@ -69,4 +69,11 @@ sessionsRouter.post("/login", async (req, res) => {
   });
 });
 
+sessionsRouter.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).send('Your session is being destroyed');
+  })
+  res.redirect('/login')
+})
+
 module.exports = sessionsRouter;
