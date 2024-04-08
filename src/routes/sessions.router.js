@@ -44,6 +44,7 @@ sessionsRouter.post("/register", async (req, res) => {
 });
 
 sessionsRouter.post("/login", async (req, res) => {
+  
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -56,10 +57,16 @@ sessionsRouter.post("/login", async (req, res) => {
   if (!user) {
     return res.status(401).send({ status: "error", error: "User not found" });
   }
+
+  if (user.email == 'adminCoder@coder.com' && user.password == 'adminCod3r123') {
+    user.role = "admin";
+  }
+
   req.session.user = {
     name: `${user.first_name},${user.last_name}`,
     email: user.email,
     age: user.age,
+    role: user.role,
   };
 
   res.send({
