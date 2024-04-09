@@ -46,7 +46,7 @@ sessionsRouter.post("/register", async (req, res) => {
 sessionsRouter.post("/login", async (req, res) => {
   
   const { email, password } = req.body;
-
+º
   if (!email || !password) {
     return res
       .status(400)

@@ -92,29 +92,6 @@ io.on("connection", async (socket) => {
   });
 });
 
-/** Cookies */
-
-app.get("/viewCookiesHandlebars", (req, res) => {
-  res.render("cookies");
-});
-
-app.post("/cookies", (req, res) => {
-  const data = req.body;
-  res.cookie("coderCookie", data, { maxAge: 120 * 1000, signed: true });
-  res.send({ status: "success", message: "Cookies enviadas" });
-});
-
-app.get("/cookies", (req, res) => {
-  const cookies = req.signedCookies.cookies;
-  res.send({ status: "success", payload: cookies });
-});
-
-app.get("/clearCookie", (req, res) => {
-  /** Es el /* del ej del profesor. Para que se limpie la cookie */
-  res.clearCookie("coderCookie");
-  res.send("Cookie eliminada");
-});
-
 // Otras configuraciones y rutas
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
