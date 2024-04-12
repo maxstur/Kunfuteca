@@ -1,26 +1,38 @@
-<h1>Sign In</h1>
+{{!-- src/views/register.handlebars --}}
+
+  <h1>Sign Up</h1>
 
 <div>
   <form action="" id="registerForm"></form>
   <label for="first_name">First Name:</label>
-  <input type="text" name="first_name" />
+  <input
+    type="text"
+    id="first_name"
+    name="first_name"
+    autocomplete="given-name"
+  />
   <br />
   <label for="last_name">Last Name:</label>
-  <input type="text" name="last_name" />
+  <input
+    type="text"
+    id="last_name"
+    name="last_name"
+    autocomplete="given-name"
+  />
   <br />
   <label for="email">Email:</label>
-  <input type="email" name="email" />
+  <input type="email" id="email" name="email" autocomplete="email" />
   <br />
   <label for="age">Age:</label>
-  <input type="number" name="age" />
+  <input type="number" id="age" name="age" autocomplete="age" />
   <br />
   <label for="password">Password:</label>
-  <input type="password" name="password" />
+  <input type="password" id="password" name="password" />
   <br />
   <label for="confirm_password">Confirm Password:</label>
-  <input type="password" name="confirm_password" />
+  <input type="password" id="confirm_password" name="confirm_password" />
   <br />
-  <button type="submit">Sign In</button>
+  <button type="submit">Sign Up</button>
   <br />
   <br />
   <p>Already have an account?</p>

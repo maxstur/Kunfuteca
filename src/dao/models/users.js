@@ -7,7 +7,11 @@ const userSchema = new mongoose.Schema({
   age: Number,
   password: String,
   confirm_password: String,
-  role: { type: String, default: "usuario" },
+  role: {
+    type: String,
+    default: "user",
+    enum: ["admin", "user"],
+  },
 });
 
 const userModel = mongoose.model("users", userSchema);

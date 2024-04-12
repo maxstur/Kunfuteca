@@ -1,10 +1,6 @@
-require("dotenv").config();
-
 const express = require("express");
-const cookieParser = require("cookie-parser");
-const port = 8080;
 const productsRouter = require("./routes/products.router");
-const viewsRouter = require("./routes/views.router");
+const { viewsRouter } = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
 const handlebars = require("express-handlebars");
@@ -15,41 +11,40 @@ const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const port = 8080;
+require("dotenv").config();
 
 const app = express();
+
+// Configuración del motor de plantillas, Handlebars
+app.engine("handlebars", handlebars.engine());
+app.set("views", `${__dirname}/views`);
+app.set("view engine", "handlebars");
 
 /** DB Conection */
 mongoose
   .connect(
-    `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/`
+    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`
   )
-  .then(() => console.log("DB connected"));
+  .then(() => console.log("DB connected"))
 
-/** Middlewares */
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// public
-app.use(express.static(`${__dirname}/public`));
-
-app.use(cookieParser("coderSecret"));
+// Session
 app.use(
   session({
     secret: "zFckEEhSecret",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: `mongodb+srv://maarashu:1lP4iDn6WjdPOiNS@kunfuteca.xja1mzn.mongodb.net/`,
+      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
       ttl: 3600,
     }),
   })
 );
 
-// Configuración del motor de plantillas, Handlebars
-
-app.engine("handlebars", handlebars.engine());
-app.set("views", `${__dirname}/views`);
-app.set("view engine", "handlebars");
+/** Middlewares */
+app.use(express.static(`${__dirname}/public`));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /**Port Config */
 const serverHttp = app.listen(port, () => {
@@ -57,7 +52,6 @@ const serverHttp = app.listen(port, () => {
 });
 
 // sockets.io
-
 const io = new Server(serverHttp);
 
 app.use((req, res, next) => {
@@ -92,8 +86,10 @@ io.on("connection", async (socket) => {
   });
 });
 
-// Otras configuraciones y rutas
+// Rutas API
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
-app.use("/", viewsRouter);
 app.use("/api/sessions", sessionsRouter);
+
+// Rutas Views
+app.use("/", viewsRouter);
