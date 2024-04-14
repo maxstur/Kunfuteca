@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session");
 const productsRouter = require("./routes/products.router");
 const { viewsRouter } = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
@@ -9,7 +10,6 @@ const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
-const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const port = 8080;
 require("dotenv").config();
@@ -26,7 +26,7 @@ mongoose
   .connect(
     `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`
   )
-  .then(() => console.log("DB connected"))
+  .then(() => console.log("DB connected"));
 
 // Session
 app.use(
@@ -91,5 +91,5 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
 
-// Rutas Views
+// Rutas de vista
 app.use("/", viewsRouter);

@@ -1,4 +1,3 @@
-const express = require("express");
 const { Router } = require("express");
 const userModel = require("../dao/models/users");
 
@@ -8,18 +7,7 @@ sessionsRouter.post("/register", async (req, res) => {
   const { first_name, last_name, email, age, password, confirm_password } =
     req.body;
 
-  if (
-    !first_name ||
-    !last_name ||
-    !email ||
-    !age ||
-    !password ||
-    !confirm_password
-  ) {
-    return res
-      .status(400)
-      .send({ status: "error", error: "All fields are required" });
-  }
+  // Validar que la contraseña coincida con la confirmación de la contraseña
   if (password !== confirm_password) {
     return res
       .status(400)

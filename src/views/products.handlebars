@@ -1,13 +1,26 @@
 <h1>Productos</h1>
 
+{{#each}}
+
+  <div>
+    <p>{{user.name}}</p>
+    <p>{{user.email}}</p>
+    <p>{{user.age}}</p>
+  </div>
+
+  <a href="/api/sessions/logout"><button>Logout</button></a>
+  <br /><br />
+
+{{/each}}
+
 {{#each products}}
   <div>
     <h2>{{this.description}}</h2>
     <p>Título: {{this.title}}</p>
     <p>Precio: {{this.price}}</p>
-    <button>Agregar al carrito</button>
+    <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
   </div>
-  <br><br>
+  <br /><br />
 {{/each}}
 
 <div>
@@ -25,7 +38,6 @@
 </div>
 
 <script>
-  function addToCart(productId) { // Aquí puedes implementar la lógica para
-  agregar el producto al carrito console.log('Agregando producto al carrito:',
-  productId); }
+  function addToCart(productId) { Agregar el producto al carrito
+  console.log('Agregando producto al carrito:', productId); }
 </script>
