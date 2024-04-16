@@ -1,3 +1,9 @@
+const signupButton = document.getElementById("signupButton");
+
+signupButton.addEventListener("click", () => {
+    window.location.href = "/register";
+});
+
 const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", (event) => {
@@ -13,7 +19,7 @@ loginForm.addEventListener("submit", (event) => {
         },
     }).then(res => {
         if(res.status == 200 ){
-            window.location.replace('/products');
+            window.location.replace('/profile');
         }
     })
 })

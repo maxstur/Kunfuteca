@@ -10,17 +10,9 @@ const productManager = new ProductManager(
 const router = Router();
 const viewsRouter = Router();
 
-const access = (req, res, next) => {
-  if (req.session.user == "loggedIn") {
-    next();
-  } else {
-    res.redirect("/products");
-  }
-}
-
 const publicAccess = (req, res, next) => {
   if (req.session.user) {
-    res.redirect("/products");
+    return res.redirect("/profile");
   } else {
     next();
   }
@@ -50,7 +42,7 @@ router.get("/chat", (req, res) => {
   res.render("chat", {});
 });
 
-router.get("/products", async (req, res) => {
+router.get("/products",  async (req, res) => {
   try {
     const { docs, ...rest } = await productManager.getProducts(req.query);
     res.render("products", { products: docs, ...rest });
@@ -104,8 +96,8 @@ viewsRouter.get("/login", publicAccess, (req, res) => {
   res.render("login");
 });
 
-viewsRouter.get("/products", privateAccess, (req, res) => {
-  res.render("my profile", { user: req.session.user });
-});
+viewsRouter.get("/profile", privateAccess, (req, res) => {
+  res.render("profile", { user: req.session.user });
+})
 
 module.exports = { router, viewsRouter };

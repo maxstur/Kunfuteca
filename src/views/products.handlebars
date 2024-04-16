@@ -1,17 +1,6 @@
 <h1>Productos</h1>
 
-{{#each}}
 
-  <div>
-    <p>{{user.name}}</p>
-    <p>{{user.email}}</p>
-    <p>{{user.age}}</p>
-  </div>
-
-  <a href="/api/sessions/logout"><button>Logout</button></a>
-  <br /><br />
-
-{{/each}}
 
 {{#each products}}
   <div>
@@ -37,7 +26,8 @@
   {{/if}}
 </div>
 
+// Add to cart
 <script>
-  function addToCart(productId) { Agregar el producto al carrito
+  function addToCart(productId) {
   console.log('Agregando producto al carrito:', productId); }
 </script>

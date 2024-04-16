@@ -70,7 +70,7 @@ sessionsRouter.post("/login", async (req, res) => {
   };
 
   // Enviar mensaje diferente dependiendo del rol del usuario
-  const message = user.role === "admin" ? "Admin logged in" : "User logged in";
+  const message = user.role == "admin" ? "Admin logged in" : "User logged in";
 
   // Enviar la respuesta con el mensaje y los datos de sesión
   res.send({
