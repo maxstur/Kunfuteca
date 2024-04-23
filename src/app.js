@@ -24,7 +24,7 @@ app.set("view engine", "handlebars");
 /** DB Conection */
 mongoose
   .connect(
-    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`
+    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/`,
   )
   .then(() => console.log("DB connected"));
 
@@ -35,9 +35,15 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
+      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/`,
       ttl: 3600,
     }),
+    cookie: {
+      maxAge: 1000 * 60 * 1080, // Tiempo de vida de la cookie en milisegundos (en este caso, 1 día)
+      secure: false,
+      httpOnly: true,
+      sameSite: 'strict'
+    },
   })
 );
 

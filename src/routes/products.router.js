@@ -1,11 +1,11 @@
 const { Router } = require("express");
 const ProductManager = require("../dao/dbManagers/ProductManager");
-const router = Router();
+const viewsRouter = Router();
 const productManager = new ProductManager(
   __dirname + "/../files/products.json"
 );
 
-router.post("/", async (req, res) => {
+viewsRouter.post("/", async (req, res) => {
   try {
     const newProduct = req.body;
     console.log("Datos del producto recibidos:", newProduct);
@@ -21,7 +21,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+viewsRouter.get("/", async (req, res) => {
   let query = req.query;
   try {
     let { docs, ...rest } = await manager.getProducts(query);
@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+viewsRouter.get("/:id", async (req, res) => {
   try {
     let product = await productManager.getProduct(req.params.id);
   } catch (error) {
@@ -40,7 +40,7 @@ router.get("/:id", async (req, res) => {
   res.send({ product: product });
 });
 
-router.put("/:pid", async (req, res) => {
+viewsRouter.put("/:pid", async (req, res) => {
   try {
     const id = req.params.pid;
     await productManager.updateProduct(id, req.body);
@@ -50,7 +50,7 @@ router.put("/:pid", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+viewsRouter.delete("/:id", async (req, res) => {
   try {
     const id = req.params.id;
     await productManager.deleteProduct(id);
@@ -60,4 +60,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = viewsRouter;

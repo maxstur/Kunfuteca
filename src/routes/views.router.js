@@ -7,12 +7,11 @@ const productManager = new ProductManager(
   __dirname + "/../files/products.json"
 );
 
-const router = Router();
 const viewsRouter = Router();
 
 const publicAccess = (req, res, next) => {
   if (req.session.user) {
-    return res.redirect("/profile");
+    return res.redirect("/products");
   } else {
     next();
   }
@@ -28,31 +27,31 @@ const privateAccess = (req, res, next) => {
 
 /** views */
 
-router.get("/", async (req, res) => {
+viewsRouter.get("/", async (req, res) => {
   const products = await productManager.getProducts();
   res.render("home", { products: products });
 });
 
-router.get("/realtimeproducts", async (req, res) => {
+viewsRouter.get("/realtimeproducts", async (req, res) => {
   const products = await productManager.getProducts();
   res.render("realtimeproducts", { products: products });
 });
 
-router.get("/chat", (req, res) => {
+viewsRouter.get("/chat", (req, res) => {
   res.render("chat", {});
 });
 
-router.get("/products",  async (req, res) => {
+viewsRouter.get("/products", privateAccess, async (req, res) => {
   try {
-    const { docs, ...rest } = await productManager.getProducts(req.query);
-    res.render("products", { products: docs, ...rest });
+    const { user, docs, ...rest } = await productManager.getProducts(req.query);
+    res.render("products", { user: req.session.user, products: docs, ...rest });
   } catch (error) {
     res.send({ status: "error", error: error.message });
   }
 });
 
 /** alternative */
-router.get("/products.alt", async (req, res) => {
+viewsRouter.get("/products.alt", async (req, res) => {
   //alternativa
 
   try {
@@ -63,7 +62,7 @@ router.get("/products.alt", async (req, res) => {
   }
 });
 
-router.get("/products/:pid", async (req, res) => {
+viewsRouter.get("/products/:pid", async (req, res) => {
   //alternativa
 
   try {
@@ -75,7 +74,7 @@ router.get("/products/:pid", async (req, res) => {
 });
 /** ----------------- */
 
-router.get("/carts/:cid", async (req, res) => {
+viewsRouter.get("/carts/:cid", async (req, res) => {
   try {
     const cart = await cartsManager.getCart(req.params.cid);
     res.render("cart", cart);
@@ -96,8 +95,7 @@ viewsRouter.get("/login", publicAccess, (req, res) => {
   res.render("login");
 });
 
-viewsRouter.get("/profile", privateAccess, (req, res) => {
-  res.render("profile", { user: req.session.user });
+viewsRouter.get("/resetPassword", (req, res) => {
+  res.render  ("resetPassword", {});
 })
-
-module.exports = { router, viewsRouter };
+module.exports = { viewsRouter };

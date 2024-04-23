@@ -1,14 +1,14 @@
 const { Router } = require("express");
 const CartsManager = require("../dao/dbManagers/CartsManager");
 const ProductManager = require("../dao/dbManagers/ProductManager");
-const router = Router();
+const viewsRouter = Router();
 
 const productManager = new ProductManager(
   __dirname + "/../files/products.json"
 );
 const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
 
-router.post("/", async (req, res) => {
+viewsRouter.post("/", async (req, res) => {
   try {
     await cartsManager.addCart();
     res.send({ status: "Carrito creado exitosamente" });
@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+viewsRouter.get("/", async (req, res) => {
   try {
     const carts = await cartsManager.getAllCarts();
     res.send({ carts });
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+viewsRouter.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const cart = await cartsManager.getCart(id);
@@ -36,7 +36,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/:id/product/:pid", async (req, res) => {
+viewsRouter.post("/:id/product/:pid", async (req, res) => {
   const id = req.params.id;
   const productId = req.params.pid;
 
@@ -56,7 +56,7 @@ router.post("/:id/product/:pid", async (req, res) => {
   res.send({ status: "Producto agregado al carrito" });
 });
 
-router.delete("/:cid/product/:pid", async (req, res) => {
+viewsRouter.delete("/:cid/product/:pid", async (req, res) => {
   const cid = req.params.cid;
   const pid = req.params.pid;
   try {
@@ -72,7 +72,7 @@ router.delete("/:cid/product/:pid", async (req, res) => {
   }
 });
 
-router.put('/:id/product/:pid', async (req, res)=>{
+viewsRouter.put('/:id/product/:pid', async (req, res)=>{
   const {id, pid} = req.params;
   const quantity = req.body.quantity
   
@@ -84,7 +84,7 @@ router.put('/:id/product/:pid', async (req, res)=>{
   }
 })
 
-router.put('/:id/', async (req, res)=>{ //actualizar contenido
+viewsRouter.put('/:id/', async (req, res)=>{ //actualizar contenido
   const {id} = req.params;
 
   try {
@@ -95,7 +95,7 @@ router.put('/:id/', async (req, res)=>{ //actualizar contenido
   }
 })
 
-router.delete('/:id', async (req, res)=>{
+viewsRouter.delete('/:id', async (req, res)=>{
   const {id} = req.params; 
   try {
       const result = await cartsManager.deleteAllProducts(id)
@@ -106,4 +106,4 @@ router.delete('/:id', async (req, res)=>{
 })
 
 
-module.exports = router;
+module.exports = viewsRouter;
