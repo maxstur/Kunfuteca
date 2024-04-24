@@ -22,7 +22,7 @@ form.addEventListener("submit", (e) => {
 
             setTimeout(() => {
                 window.location.replace('/login');
-            }, 5);
+            }, 0.1);
         }
     })
 })

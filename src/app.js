@@ -13,10 +13,12 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 const MongoStore = require("connect-mongo");
 const port = 8080;
 require("dotenv").config();
+const passport = require("passport");
+const initializePassport = require("./config/passport.config");
 
 const app = express();
 
-// Configuración del motor de plantillas, Handlebars
+/** Handlebars */
 app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
@@ -24,7 +26,7 @@ app.set("view engine", "handlebars");
 /** DB Conection */
 mongoose
   .connect(
-    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/`,
+    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
   )
   .then(() => console.log("DB connected"));
 
@@ -35,7 +37,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/`,
+      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
       ttl: 3600,
     }),
     cookie: {
@@ -51,6 +53,11 @@ app.use(
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/** Passport */
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 /**Port Config */
 const serverHttp = app.listen(port, () => {
