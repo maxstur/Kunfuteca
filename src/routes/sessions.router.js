@@ -54,6 +54,18 @@ sessionsRouter.get("/loginFail", (req, res) => {
   });
 });
 
+sessionsRouter.get('/github', passport. authenticate('github', {scope:['user:email']}), async (req, res)=> {})
+
+sessionsRouter.get('/githubcallback', passport.authenticate('github', {failureRedirect:'/login'}), async (req, res)=>{
+  req.session.user = {
+    name: req.user.first_name,
+    email: req.user.email,
+    age: req.user.age,
+    role: req.user.role
+  }
+  res.redirect('/products')
+})
+
 sessionsRouter.get("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).send("Your session is being destroyed");

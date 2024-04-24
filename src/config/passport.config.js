@@ -1,5 +1,5 @@
 const passport = require("passport");
-const GithubStrategy = require('passport-github2');
+const GithubStrategy = require("passport-github2");
 const Local = require("passport-local");
 const userModel = require("../dao/models/users");
 const { createHash, isValidPassword } = require("../utils");
@@ -75,6 +75,42 @@ const initializePassport = () => {
       }
     )
   );
+
+  passport.use(
+    "github",
+    new GithubStrategy(
+      {
+        clientID: "Iv1.99c8943a5483aae9",
+        callbackURL: "http://localhost:8080/api/sessions/githubcallback",
+        clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          let role = "user"; 
+          if (profile._json.email == "adminCoder@coder.com") {
+            role = "admin";
+          }
+          const user = await userModel.findOne({ email: profile._json.email });
+
+          if (!user) {
+            let newUser = {
+              first_name: profile._json.name,
+              last_name: "",
+              age: 0,
+              email: profile._json.email,
+              role,
+            };
+            let result = await userModel.create(newUser);
+            return done(null, result);
+          } else {
+            return done(null, user);
+          }
+        } catch (error) {
+          return done(error);
+        }
+      }
+    )
+  );
 };
 
 passport.serializeUser((user, done) => {
@@ -82,7 +118,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (userId, done) => {
-  let user = await userModel.findOne({_id: userId});
+  let user = await userModel.findOne({ _id: userId });
   done(null, user);
 });
 
