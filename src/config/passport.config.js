@@ -1,8 +1,9 @@
 const passport = require("passport");
+const jwt = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const Local = require("passport-local");
 const userModel = require("../dao/models/users");
-const { createHash, isValidPassword } = require("../utils");
+const JWT_SECRET = 'passportJwtSecret';
 
 const LocalStrategy = Local.Strategy;
 
@@ -86,7 +87,7 @@ const initializePassport = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          let role = "user"; 
+          let role = "user";
           if (profile._json.email == "adminCoder@coder.com") {
             role = "admin";
           }
@@ -111,7 +112,28 @@ const initializePassport = () => {
       }
     )
   );
+
+  password.use('jwt', new jwt.Strategy({
+    secretOrKey: JWT_SECRET, 
+    jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor])
+  }, (jwt_payload, done)=>{
+    try {
+      //Possible custom error
+      //done(null, false, {messages:'User doesn`t exist.'})
+      return done(null, jwt_payload); //done(null, false)
+    } catch (error) {
+      return done(error)
+    }
+  }))
 };
+
+function cookieExtractor(req){
+  let token = null;
+  if(req.cookies.rodsCookie){
+    token = req.cookie.rodsCookie;
+  }
+  return token;
+}
 
 passport.serializeUser((user, done) => {
   done(null, user._id);
@@ -122,4 +144,4 @@ passport.deserializeUser(async (userId, done) => {
   done(null, user);
 });
 
-module.exports = initializePassport;
+module.exports = {initializePassport, JWT_SECRET}

@@ -1,5 +1,4 @@
 const express = require("express");
-const session = require("express-session");
 const productsRouter = require("./routes/products.router");
 const { viewsRouter } = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
@@ -15,50 +14,41 @@ const port = 8080;
 require("dotenv").config();
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
+const { dictionaryRouter } = require("./routes/dictionary.router");
+const cookieParser = require("cookie-parser");
 
+/** DB Conection */
+mongoose
+  .connect(
+    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`
+  )
+  .then(() => console.log("DB connected"));
 
 const app = express();
+
+/** Cookie Parser */
+app.use(cookieParser())
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
 
-/** DB Conection */
-mongoose
-  .connect(
-    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
-  )
-  .then(() => console.log("DB connected"));
-
-// Session
-app.use(
-  session({
-    secret: "zFckEEhSecret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
-      ttl: 3600,
-    }),
-    cookie: {
-      maxAge: 1000 * 60 * 1080, // Tiempo de vida de la cookie en milisegundos (en este caso, 1 día)
-      secure: false,
-      httpOnly: true,
-      sameSite: 'strict'
-    },
-  })
-);
 
 /** Middlewares */
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/** Passport */
-initializePassport();
-app.use(passport.initialize());
-app.use(passport.session());
+// /** Passport */
+// initializePassport();
+// app.use(passport.initialize());
+
+/** DATABASE */
+let users = [
+  { email: "robert@takena.com", passport: "Takena", role: "user" },
+  { email: "adminCoder@coder.com", password: "adminCod3r123", role: "admin" },
+];
 
 /**Port Config */
 const serverHttp = app.listen(port, () => {
@@ -100,10 +90,15 @@ io.on("connection", async (socket) => {
   });
 });
 
-// Rutas API
+// Rutas API - app.use
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
+//app.use('api/dictionary', dictionaryRouter)
+
+//app use del ej de pets clase 23 CustomRouter y UserRouter
+// const userRouter = new UserRouter() //Se solicita arriba declarar const UserRouter = requires('./routes/UserRouter');
+// app.use('/api/users', userRouter.getRouter());
 
 // Rutas de vista
 app.use("/", viewsRouter);

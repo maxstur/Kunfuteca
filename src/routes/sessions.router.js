@@ -1,7 +1,9 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
-const { createHash, isValidPassword } = require("../utils");
+const { callPassport, checkRoleAuthorization } = require("../utils");
+const { JWT_SECRET } = require("../config/passport.config");
+const jwt = require("jsonwebtoken");
 
 const sessionsRouter = Router();
 
@@ -28,7 +30,7 @@ sessionsRouter.get("api/sessions/registerFail", (req, res) => {
 sessionsRouter.post(
   "/login",
   passport.authenticate("login", { failureRedirect: "api/sessions/loginFail" }),
-  async (req, res) => {
+  (req, res) => {
     const user = req.user;
 
     req.session.user = {
@@ -54,17 +56,25 @@ sessionsRouter.get("/loginFail", (req, res) => {
   });
 });
 
-sessionsRouter.get('/github', passport. authenticate('github', {scope:['user:email']}), async (req, res)=> {})
+sessionsRouter.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] }),
+  async (req, res) => {}
+);
 
-sessionsRouter.get('/githubcallback', passport.authenticate('github', {failureRedirect:'/login'}), async (req, res)=>{
-  req.session.user = {
-    name: req.user.first_name,
-    email: req.user.email,
-    age: req.user.age,
-    role: req.user.role
+sessionsRouter.get(
+  "/githubcallback",
+  passport.authenticate("github", { failureRedirect: "/login" }),
+  async (req, res) => {
+    req.session.user = {
+      name: req.user.first_name,
+      email: req.user.email,
+      age: req.user.age,
+      role: req.user.role,
+    };
+    res.redirect("/products");
   }
-  res.redirect('/products')
-})
+);
 
 sessionsRouter.get("/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -102,5 +112,36 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
     details: result,
   });
 });
+
+sessionsRouter.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  let user = user.find((u = u.email == email && u.password == password));
+  if (!user) {
+    return res
+      .status(400)
+      .send({ status: "error", error: "incorrect credentials" });
+  }
+
+  const token = jet.sign({ email, password, role: user.role }, JWT_SECRET, {
+    expiresIn: "5hs",
+  });
+  res
+    .cookie("rodsCookie", token, { httpOnly: true })
+    .send({ status: "success", message: "succsessfully logged in" });
+});
+
+sessionsRouter.get(
+  "/current",
+  callPassport("jwt"),
+  checkRoleAuthorization("admin"),
+  (req, res) => {
+    res.send({
+      status: "success",
+      user: req.user,
+      token: req.cookies.rodsCookie,
+    });
+  }
+);
 
 module.exports = sessionsRouter;
