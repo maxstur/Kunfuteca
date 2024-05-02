@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const passport = require('passport')
-const config = require('./config/jwt.config')
+const config = require('./jwtConfig/jwt.config')
 
 /** JWT */
 const JWT_SECRET = config.JWT_SECRET;
