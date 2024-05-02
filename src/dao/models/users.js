@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   age: Number,
   password: String,
+  confirm_password: String,
   cart: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "carts",

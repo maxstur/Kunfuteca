@@ -1,3 +1,3 @@
 module.exports = {
-    JWT_SECRET: "DontSayButSave"
+    JWT_SECRET: "ChageForMaxSafety"
 };

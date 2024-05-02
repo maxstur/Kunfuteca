@@ -1,13 +1,25 @@
 const jwt = require("jsonwebtoken");
-const passport = require('passport')
-const config = require('./jwtConfig/jwt.config')
+const bcrypt = require("bcrypt");
 
-/** JWT */
-const JWT_SECRET = config.JWT_SECRET;
+// Utilizamos "HashSync" de bcrypt para hashear la contraseña
+// Y "genSaltSync" para generar un salt o sea una cadena aleatoria y el número es la longitud
+// de caracteres.
+
+const createHash = (password) => {
+  const hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(20));
+  return hashedPassword;
+};
+
+// Validar que la contraseña coincida con "CompareSync" de bcrypt
+const isValidPassword = (user, password) => {
+  const isValid = bcrypt.compareSync(password, user.password);
+  return isValid;
+};
+
 
 const generateToken = (user) => {
   delete user.password;
-  const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "4hs" });
+  const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "4h, 5m" });
   return token;
 };
 
@@ -30,32 +42,43 @@ const authToken = (req, res, next) => {
   });
 };
 
-const callPassport = (strategy)=>{
-  return(req, res, next)=>{
-    passport.authenticate(strategy, function(err, user, info){
-      if(err) {return next(err)}
-      if(!user) {
-        return res.status(401).send({status:'error', error: info.messages ? info.messages:info.toString()})
+const callPassport = (strategy) => {
+  return (req, res, next) => {
+    passport.authenticate(strategy, function (err, user, info) {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(401).send({
+          status: "error",
+          error: info.messages ? info.messages : info.toString(),
+        });
       }
 
       req.user = user;
       next();
-    })(req, res, next)
-  }
-}
+    })(req, res, next);
+  };
+};
 
-const checkRoleAuthorization = (targettedRole)=>{
-  return  (req, res, next)=>{
-    if(!req.user) return res.status(401).send({status:'error', error:'wrong credentials'})
-    if(req.user.role != targettedRole) return res.status(403).send({status:'error', error:'not authorized'})
+const checkRoleAuthorization = (targettedRole) => {
+  return (req, res, next) => {
+    if (!req.user)
+      return res
+        .status(401)
+        .send({ status: "error", error: "wrong credentials" });
+    if (req.user.role != targettedRole)
+      return res.status(403).send({ status: "error", error: "not authorized" });
 
     next();
-  }
-}
+  };
+};
 
 module.exports = {
+  createHash,
+  isValidPassword,
   generateToken,
   authToken,
   callPassport,
-  checkRoleAuthorization
+  checkRoleAuthorization,
 };

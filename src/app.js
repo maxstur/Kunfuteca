@@ -9,12 +9,10 @@ const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
-const MongoStore = require("connect-mongo");
 const port = 8080;
 require("dotenv").config();
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
-const { dictionaryRouter } = require("./routes/dictionary.router");
 const cookieParser = require("cookie-parser");
 
 /** DB Conection */
@@ -40,15 +38,9 @@ app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// /** Passport */
-// initializePassport();
-// app.use(passport.initialize());
-
-/** DATABASE */
-let users = [
-  { email: "robert@takena.com", passport: "Takena", role: "user" },
-  { email: "adminCoder@coder.com", password: "adminCod3r123", role: "admin" },
-];
+/** Passport */
+initializePassport();
+app.use(passport.initialize());
 
 /**Port Config */
 const serverHttp = app.listen(port, () => {
@@ -94,11 +86,6 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-//app.use('api/dictionary', dictionaryRouter)
-
-//app use del ej de pets clase 23 CustomRouter y UserRouter
-// const userRouter = new UserRouter() //Se solicita arriba declarar const UserRouter = requires('./routes/UserRouter');
-// app.use('/api/users', userRouter.getRouter());
 
 // Rutas de vista
 app.use("/", viewsRouter);

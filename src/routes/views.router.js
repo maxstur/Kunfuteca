@@ -4,6 +4,7 @@ const ProductManager = require("../dao/dbManagers/ProductManager");
 const jwt = require("jsonwebtoken");
 const generateToken = require("../utils");
 
+
 const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
 const productManager = new ProductManager(
   __dirname + "/../files/products.json"

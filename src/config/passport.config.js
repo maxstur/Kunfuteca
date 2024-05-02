@@ -1,11 +1,15 @@
 const passport = require("passport");
-const jwt = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
-const Local = require("passport-local");
+const local = require("passport-local");
 const userModel = require("../dao/models/users");
-const JWT_SECRET = "passportJwtSecret";
+const { createHash, isValidPassword } = require("../utils");
+const jwt = require("jsonwebtoken");
+const { ExtractJwt } = require("jsonwebtoken");
+const { JWT_SECRET } = require("../jwtConfig/jwt.config");
 
-const LocalStrategy = Local.Strategy;
+
+
+const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
   passport.use(
@@ -16,40 +20,31 @@ const initializePassport = () => {
         usernameField: "email",
         session: false,
       },
-      async (req, username, password, done) => {
-        const { first_name, last_name, email, age, role } = req.body;
-
-        let user = await userModel.findOne({ email: username });
-
+      async (req, email, password, done) => {
         try {
-          if (user) {
-            return done(null, false);
-          }
+          const { first_name, last_name } = req.body;
+          if (!first_name || !last_name)
+            return done(null, false, { message: "Invalid parameters" });
 
-          // Verificar el rol del usuario
-          if (email == "adminCoder@coder.com" && password == "adminCod3r123") {
-            role = "admin";
-          } else {
-            role = "user";
-          }
+          const existingUser = await userModel.findOne({ email });
+          if (existingUser)
+            return done(null, false, {
+              message: "User with that email already exists",
+            });
 
-          // Crear un nuevo usuario
-          const newUser = {
+          const newUserData = {
             first_name,
             last_name,
             email,
-            age,
             password: createHash(password),
             confirm_password: createHash(password),
             role,
           };
 
-          // Crear el usuario
-          const result = await userModel.create(newUser);
-
+          let result = await userModel.create(newUserData);
           return done(null, result);
         } catch (error) {
-          return done(error);
+          done(error);
         }
       }
     )
@@ -66,10 +61,10 @@ const initializePassport = () => {
         try {
           const user = await userModel.findOne({ email });
           if (!user) {
-            return done(null, false);
+            return done(null, false, { message: "User not found" });
           }
           if (!isValidPassword(user, password)) {
-            return done(null, false);
+            return done(null, false, { message: "Invalid password" });
           }
           return done(null, user);
         } catch (error) {
@@ -90,17 +85,12 @@ const initializePassport = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          let role = "user";
-          if (profile._json.email == "adminCoder@coder.com") {
-            role = "admin";
-          }
           const user = await userModel.findOne({ email: profile._json.email });
 
           if (!user) {
             let newUser = {
               first_name: profile._json.name,
               last_name: "",
-              age: 0,
               email: profile._json.email,
               role,
             };
@@ -109,6 +99,7 @@ const initializePassport = () => {
           } else {
             return done(null, user);
           }
+          return done(null, false);
         } catch (error) {
           return done(error);
         }
@@ -116,30 +107,38 @@ const initializePassport = () => {
     )
   );
 
-  password.use(
-    "jwt",
-    new jwt.Strategy(
-      {
-        secretOrKey: JWT_SECRET,
-        jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor]),
-      },
-      (jwt_payload, done) => {
-        try {
-          //Possible custom error
-          //done(null, false, {messages:'User doesn`t exist.'})
-          return done(null, jwt_payload); //done(null, false)
-        } catch (error) {
-          return done(error);
-        }
-      }
-    )
-  );
+  // function cookieExtractor(req) {
+  //   let token = null;
+  //   if (req && req.cookies) {
+  //     token = req.cookies["rodsCookie"];
+  //   }
+  //   return token;
+  // }
+  
+  // passport.use(
+  //   "jwt",
+  //   new jwt.Strategy(
+  //     {
+  //       secretOrKey: JWT_SECRET,
+  //       jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+  //     },
+  //     (jwt_payload, done) => {
+  //       try {
+  //         //Possible custom error
+  //         //done(null, false, {messages:'User doesn`t exist.'})
+  //         return done(null, jwt_payload); //done(null, false)
+  //       } catch (error) {
+  //         return done(error);
+  //       }
+  //     }
+  //   )
+  // );
 };
 
 function cookieExtractor(req) {
   let token = null;
   if (req.cookies.rodsCookie) {
-    token = req.cookie.rodsCookie;
+    token = req.cookies.rodsCookie;
   }
   return token;
 }

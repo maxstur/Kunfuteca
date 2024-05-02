@@ -6,7 +6,7 @@ const {
   checkRoleAuthorization,
   generateToken,
 } = require("../utils");
-const { JWT_SECRET } = require("../config/passport.config");
+const { JWT_SECRET } = require("../jwtConfig/jwt.config");
 const jwt = require("jsonwebtoken");
 
 const sessionsRouter = Router();
@@ -26,11 +26,13 @@ sessionsRouter.post(
 );
 
 sessionsRouter.get("/registerFail", (req, res) => {
-  res.status(401).send({
+  res.status(400).send({
     status: "error",
-    error: "Authentication error",
+    error: "There was an error registering the user",
   });
 });
+
+/** LOGIN */
 
 sessionsRouter.post(
   "/login",
@@ -50,15 +52,23 @@ sessionsRouter.post(
       cart,
       age,
     };
-    const token = jwt.sign(serializableUser, "JWT_SECRET", {
+    const token = jwt.sign(serializableUser, JWT_SECRET, {
       expiresIn: "2hs",
     });
-    res.cookie("rodsCookie", token);
+
+    // Configurar la cookie con la opción HttpOnly
+    res.cookie("rodsCookie", token, { httpOnly: true });
+
+    res.send({
+      status: "success",
+      message: "Logged in successfully",
+    });
   }
 );
 
+
 sessionsRouter.get("/loginFail", (req, res) => {
-  res.status(401).send({
+  res.status(400).send({
     status: "error",
     error: "Login fail",
   });
@@ -87,7 +97,7 @@ sessionsRouter.get(
       cart,
       age,
     };
-    const token = jwt.sign(serializableUser, "JWT_SECRET", {
+    const token = jwt.sign(serializableUser, JWT_SECRET, {
       expiresIn: "2hs",
     });
     res.cookie("rodsCookie", token);
@@ -96,9 +106,7 @@ sessionsRouter.get(
 );
 
 sessionsRouter.get("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) return res.status(500).send("Your session is being destroyed");
-  });
+  res.clearCookie("rodsCookie");
   res.redirect("/login");
 });
 
@@ -106,15 +114,17 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).send({
-      status: "error",
-      error: "You sould provide right email and password",
-    });
+    return res
+      .status(400)
+      .send({ status: "error", error: "Email and password are required" });
   }
 
   const user = await userModel.findOne({ email });
+
   if (!user) {
-    return res.status(401).send({ status: "error", error: "User not found" });
+    return res
+      .status(400)
+      .send({ status: "error", error: "User not found" });
   }
 
   /** hasheamos la nueva contraseña */
@@ -125,6 +135,12 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
     { $set: { password: hashedPassword } }
   );
 
+  if (!result) {
+    return res
+      .status(400)
+      .send({ status: "error", error: "Password not updated" });
+  }
+
   res.send({
     status: "success",
     message: "Password changed successfully",
@@ -132,28 +148,11 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
   });
 });
 
-sessionsRouter.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  let user = user.find((u = u.email == email && u.password == password));
-  if (!user) {
-    return res
-      .status(400)
-      .send({ status: "error", error: "incorrect credentials" });
-  }
-
-  const token = jet.sign({ email, password, role: user.role }, JWT_SECRET, {
-    expiresIn: "5hs",
-  });
-  res
-    .cookie("rodsCookie", token, { httpOnly: true })
-    .send({ status: "success", message: "succsessfully logged in" });
-});
-
 sessionsRouter.get(
   "/current",
   callPassport("jwt"),
-  checkRoleAuthorization("admin"),
+  checkRoleAuthorization("user", "admin"),
+  passport.session(),
   (req, res) => {
     res.send({
       status: "success",
