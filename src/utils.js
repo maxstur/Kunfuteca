@@ -1,12 +1,13 @@
 const jwt = require("jsonwebtoken");
 const passport = require('passport')
+const config = require('./config/jwt.config')
 
 /** JWT */
-const PRIVATE_KEY = "DontSayButSave";
+const JWT_SECRET = config.JWT_SECRET;
 
 const generateToken = (user) => {
   delete user.password;
-  const token = jwt.sign({ user }, PRIVATE_KEY, { expiresIn: "24hs" });
+  const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "4hs" });
   return token;
 };
 
@@ -19,7 +20,7 @@ const authToken = (req, res, next) => {
   }
   //authorization: 'bearer asdjfdksadf'
   const token = authHeader.split(" ")[5];
-  jwt.verify(token, PRIVATE_KEY, (error, credentials) => {
+  jwt.verify(token, JWT_SECRET, (error, credentials) => {
     if (error) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }

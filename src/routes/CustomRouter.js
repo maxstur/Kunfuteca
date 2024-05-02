@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const jwt = require("jsonwebtoken");
+const { Error } = require("mongoose");
 
 class CustomRouter {
   constructor() {
@@ -30,7 +31,7 @@ class CustomRouter {
     res.sendServerError = (error) =>
       res.status(500).send({ status: "error", error });
     res.sendUserError = (error) =>
-      res.status(400).send({ status: "error", error });
+      res.status(400).send({ status: "error", Error });
 
     next();
   }

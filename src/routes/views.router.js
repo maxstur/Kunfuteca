@@ -1,6 +1,8 @@
 const { Router } = require("express");
 const CartsManager = require("../dao/dbManagers/CartsManager");
 const ProductManager = require("../dao/dbManagers/ProductManager");
+const jwt = require("jsonwebtoken");
+const generateToken = require("../utils");
 
 const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
 const productManager = new ProductManager(
@@ -10,18 +12,10 @@ const productManager = new ProductManager(
 const viewsRouter = Router();
 
 const publicAccess = (req, res, next) => {
-  if (req.session.user) {
-    return res.redirect("/products");
-  } else {
-    next();
-  }
+  next();
 };
 
 const privateAccess = (req, res, next) => {
-  if (!req.session.user) {
-    console.log("Not logged in yet");
-    return res.redirect("/login");
-  }
   next();
 };
 
@@ -43,8 +37,9 @@ viewsRouter.get("/chat", (req, res) => {
 
 viewsRouter.get("/products", privateAccess, async (req, res) => {
   try {
-    const { user, docs, ...rest } = await productManager.getProducts(req.query);
-    res.render("products", { user: req.session.user, products: docs, ...rest });
+    const { docs, ...rest } = await productManager.getProducts(req.query);
+    let user = { email: "" };
+    res.render("products", { products: docs, user, ...rest });
   } catch (error) {
     res.send({ status: "error", error: error.message });
   }
@@ -96,6 +91,6 @@ viewsRouter.get("/login", publicAccess, (req, res) => {
 });
 
 viewsRouter.get("/resetPassword", (req, res) => {
-  res.render  ("resetPassword", {});
-})
+  res.render("resetPassword", {});
+});
 module.exports = { viewsRouter };

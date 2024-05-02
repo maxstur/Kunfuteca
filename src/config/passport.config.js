@@ -3,7 +3,7 @@ const jwt = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const Local = require("passport-local");
 const userModel = require("../dao/models/users");
-const JWT_SECRET = 'passportJwtSecret';
+const JWT_SECRET = "passportJwtSecret";
 
 const LocalStrategy = Local.Strategy;
 
@@ -14,6 +14,7 @@ const initializePassport = () => {
       {
         passReqToCallback: true,
         usernameField: "email",
+        session: false,
       },
       async (req, username, password, done) => {
         const { first_name, last_name, email, age, role } = req.body;
@@ -59,6 +60,7 @@ const initializePassport = () => {
     new LocalStrategy(
       {
         usernameField: "email",
+        session: false,
       },
       async (email, password, done) => {
         try {
@@ -84,6 +86,7 @@ const initializePassport = () => {
         clientID: "Iv1.99c8943a5483aae9",
         callbackURL: "http://localhost:8080/api/sessions/githubcallback",
         clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
+        session: false,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -113,23 +116,29 @@ const initializePassport = () => {
     )
   );
 
-  password.use('jwt', new jwt.Strategy({
-    secretOrKey: JWT_SECRET, 
-    jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor])
-  }, (jwt_payload, done)=>{
-    try {
-      //Possible custom error
-      //done(null, false, {messages:'User doesn`t exist.'})
-      return done(null, jwt_payload); //done(null, false)
-    } catch (error) {
-      return done(error)
-    }
-  }))
+  password.use(
+    "jwt",
+    new jwt.Strategy(
+      {
+        secretOrKey: JWT_SECRET,
+        jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor]),
+      },
+      (jwt_payload, done) => {
+        try {
+          //Possible custom error
+          //done(null, false, {messages:'User doesn`t exist.'})
+          return done(null, jwt_payload); //done(null, false)
+        } catch (error) {
+          return done(error);
+        }
+      }
+    )
+  );
 };
 
-function cookieExtractor(req){
+function cookieExtractor(req) {
   let token = null;
-  if(req.cookies.rodsCookie){
+  if (req.cookies.rodsCookie) {
     token = req.cookie.rodsCookie;
   }
   return token;
@@ -144,4 +153,4 @@ passport.deserializeUser(async (userId, done) => {
   done(null, user);
 });
 
-module.exports = {initializePassport, JWT_SECRET}
+module.exports = initializePassport;

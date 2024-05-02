@@ -20,3 +20,5 @@ class SessionRouter extends CustomRouter {
     });
   }
 }
+
+module.exports = SessionRouter; 

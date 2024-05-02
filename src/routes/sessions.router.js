@@ -1,7 +1,11 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
-const { callPassport, checkRoleAuthorization } = require("../utils");
+const {
+  callPassport,
+  checkRoleAuthorization,
+  generateToken,
+} = require("../utils");
 const { JWT_SECRET } = require("../config/passport.config");
 const jwt = require("jsonwebtoken");
 
@@ -10,9 +14,10 @@ const sessionsRouter = Router();
 sessionsRouter.post(
   "/register",
   passport.authenticate("register", {
-    failureRedirect: "registerFail",
+    failureRedirect: "api/sessions.registerFail",
+    session: false,
   }),
-  async (req, res) => {
+  (req, res) => {
     res.send({
       status: "success",
       message: "Registered successfully",
@@ -20,7 +25,7 @@ sessionsRouter.post(
   }
 );
 
-sessionsRouter.get("api/sessions/registerFail", (req, res) => {
+sessionsRouter.get("/registerFail", (req, res) => {
   res.status(401).send({
     status: "error",
     error: "Authentication error",
@@ -29,23 +34,26 @@ sessionsRouter.get("api/sessions/registerFail", (req, res) => {
 
 sessionsRouter.post(
   "/login",
-  passport.authenticate("login", { failureRedirect: "api/sessions/loginFail" }),
+  passport.authenticate("login", {
+    failureRedirect: "api/sessions/loginFail",
+    session: false,
+  }),
   (req, res) => {
-    const user = req.user;
+    const { _id, first_name, last_name, role, email, cart, age } = req.user;
 
-    req.session.user = {
-      name: ` ${user.first_name} ${user.last_name}`,
-      email: user.email,
-      age: user.age,
-      role: user.role,
+    const serializableUser = {
+      id: _id,
+      first_name,
+      last_name,
+      role,
+      email,
+      cart,
+      age,
     };
-
-    // Enviar la respuesta con el mensaje y los datos de sesión
-    res.send({
-      status: "success",
-      payload: req.session.user,
-      message: "Logged in successfully",
+    const token = jwt.sign(serializableUser, "JWT_SECRET", {
+      expiresIn: "2hs",
     });
+    res.cookie("rodsCookie", token);
   }
 );
 
@@ -58,20 +66,31 @@ sessionsRouter.get("/loginFail", (req, res) => {
 
 sessionsRouter.get(
   "/github",
-  passport.authenticate("github", { scope: ["user:email"] }),
+  passport.authenticate("github", { scope: ["user:email"], session: false }),
   async (req, res) => {}
 );
 
 sessionsRouter.get(
   "/githubcallback",
-  passport.authenticate("github", { failureRedirect: "/login" }),
+  passport.authenticate("github", {
+    failureRedirect: "/login",
+    session: false,
+  }),
   async (req, res) => {
-    req.session.user = {
-      name: req.user.first_name,
-      email: req.user.email,
-      age: req.user.age,
-      role: req.user.role,
+    const { _id, first_name, last_name, role, email, cart, age } = req.user;
+    const serializableUser = {
+      id: _id,
+      first_name,
+      last_name,
+      role,
+      email,
+      cart,
+      age,
     };
+    const token = jwt.sign(serializableUser, "JWT_SECRET", {
+      expiresIn: "2hs",
+    });
+    res.cookie("rodsCookie", token);
     res.redirect("/products");
   }
 );
