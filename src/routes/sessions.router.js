@@ -6,7 +6,7 @@ const {
   checkRoleAuthorization,
   generateToken,
 } = require("../utils");
-const { JWT_SECRET } = require("../jwtConfig/jwt.config");
+const { JWT_SECRET } = require("../config/jwt.config");
 const jwt = require("jsonwebtoken");
 
 const sessionsRouter = Router();
@@ -53,7 +53,7 @@ sessionsRouter.post(
       age,
     };
     const token = jwt.sign(serializableUser, JWT_SECRET, {
-      expiresIn: "2hs",
+      expiresIn: "2h",
     });
 
     // Configurar la cookie con la opción HttpOnly
@@ -65,7 +65,6 @@ sessionsRouter.post(
     });
   }
 );
-
 
 sessionsRouter.get("/loginFail", (req, res) => {
   res.status(400).send({
@@ -98,10 +97,10 @@ sessionsRouter.get(
       age,
     };
     const token = jwt.sign(serializableUser, JWT_SECRET, {
-      expiresIn: "2hs",
+      expiresIn: "2h",
     });
     res.cookie("rodsCookie", token);
-    res.redirect("/products");
+    res.redirect("/current");
   }
 );
 
@@ -122,9 +121,7 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
   const user = await userModel.findOne({ email });
 
   if (!user) {
-    return res
-      .status(400)
-      .send({ status: "error", error: "User not found" });
+    return res.status(400).send({ status: "error", error: "User not found" });
   }
 
   /** hasheamos la nueva contraseña */
@@ -150,16 +147,21 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
 
 sessionsRouter.get(
   "/current",
-  callPassport("jwt"),
-  checkRoleAuthorization("user", "admin"),
-  passport.session(),
+  passport.authenticate("current", { session: false }), // Autenticar al usuario utilizando la estrategia "current"
   (req, res) => {
-    res.send({
-      status: "success",
-      user: req.user,
-      token: req.cookies.rodsCookie,
+    // Una vez que el usuario está autenticado, puedes acceder a él desde req.user
+    const user = req.user; // Obtener el usuario autenticado desde req.user
+
+    // Generar el token para el usuario autenticado
+    const token = jwt.sign(user.toJSON(), JWT_SECRET, {
+      expiresIn: "2hs", // Establecer la expiración del token
     });
+
+    // Configurar la cookie con el token generado
+    res.cookie("rodsCookie", token, { httpOnly: true });
+
+    // Enviar la respuesta con el usuario autenticado y el token generado
+    res.send({ payload: user, token });
   }
 );
-
 module.exports = sessionsRouter;

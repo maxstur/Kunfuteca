@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+const { JWT_SECRET } = require("./config/jwt.config");
+
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
 // Y "genSaltSync" para generar un salt o sea una cadena aleatoria y el número es la longitud
 // de caracteres.
@@ -12,15 +14,19 @@ const createHash = (password) => {
 
 // Validar que la contraseña coincida con "CompareSync" de bcrypt
 const isValidPassword = (user, password) => {
-  const isValid = bcrypt.compareSync(password, user.password);
-  return isValid;
+  return bcrypt.compareSync(password, user.password);
 };
 
-
-const generateToken = (user) => {
-  delete user.password;
-  const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "4h, 5m" });
-  return token;
+const generateToken = (req, res, next) => {
+  let token = req.coockie.rodsCookie;
+  jwt.verify(token, JWT_SECRET, (error, decoded) => {
+    if (error) {
+      return res.status(403).send({ status: "error", error: "Not authorized" });
+    } else {
+      req.tokenUser = decoded;
+      next();
+    }
+  });
 };
 
 const authToken = (req, res, next) => {

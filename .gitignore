@@ -1,4 +1,4 @@
 /node_modules
 .env
-/jwtConfig
+jwt.config.js
 .txt

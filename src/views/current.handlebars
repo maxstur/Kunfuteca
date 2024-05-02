@@ -1,0 +1,15 @@
+<h1>Current User</h1>
+
+{{#if user}}
+
+  <div>
+    <h2>Welcome to elKunfuteca, {{user.first_name}}!</h2>
+    <p>This is your registered email: {{user.email}}</p>
+    <p><b>You are a golden {{user.role}}</b></p>
+    <p>Hurry up! Kunfuteca can't wait for you!</p>
+  </div>
+
+  <a href="/api/sessions/logout"><button>Logout</button></a>
+  <br /><br />
+
+{{/if}}

@@ -12,14 +12,6 @@ const productManager = new ProductManager(
 
 const viewsRouter = Router();
 
-const publicAccess = (req, res, next) => {
-  next();
-};
-
-const privateAccess = (req, res, next) => {
-  next();
-};
-
 /** views */
 
 viewsRouter.get("/", async (req, res) => {
@@ -36,11 +28,10 @@ viewsRouter.get("/chat", (req, res) => {
   res.render("chat", {});
 });
 
-viewsRouter.get("/products", privateAccess, async (req, res) => {
+viewsRouter.get("/products", async (req, res) => {
   try {
     const { docs, ...rest } = await productManager.getProducts(req.query);
-    let user = { email: "" };
-    res.render("products", { products: docs, user, ...rest });
+    res.render("products", { products: docs, ...rest });
   } catch (error) {
     res.send({ status: "error", error: error.message });
   }
@@ -79,6 +70,15 @@ viewsRouter.get("/carts/:cid", async (req, res) => {
   }
 });
 
+/** Middlewares */
+const publicAccess = (req, res, next) => {
+  next();
+};
+
+const privateAccess = (req, res, next) => {
+  next();
+};
+
 /** Register */
 
 viewsRouter.get("/register", publicAccess, (req, res) => {
@@ -94,4 +94,14 @@ viewsRouter.get("/login", publicAccess, (req, res) => {
 viewsRouter.get("/resetPassword", (req, res) => {
   res.render("resetPassword", {});
 });
+
+viewsRouter.get("/current", privateAccess, (req, res) => {
+  res.render("current", {
+    user: req.user,
+    message: "Logged in successfully",
+  });
+})
+
+
+
 module.exports = { viewsRouter };

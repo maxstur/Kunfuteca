@@ -3,11 +3,10 @@ const GithubStrategy = require("passport-github2");
 const local = require("passport-local");
 const userModel = require("../dao/models/users");
 const { createHash, isValidPassword } = require("../utils");
+const { JWT_SECRET } = require("../config/jwt.config");
 const jwt = require("jsonwebtoken");
-const { ExtractJwt } = require("jsonwebtoken");
-const { JWT_SECRET } = require("../jwtConfig/jwt.config");
-
-
+const { cookieExtractor } = require("../config/passport.config");
+const { ExtractJwt, Strategy: JwtStrategy } = require("passport-jwt");
 
 const LocalStrategy = local.Strategy;
 
@@ -37,8 +36,6 @@ const initializePassport = () => {
             last_name,
             email,
             password: createHash(password),
-            confirm_password: createHash(password),
-            role,
           };
 
           let result = await userModel.create(newUserData);
@@ -92,7 +89,6 @@ const initializePassport = () => {
               first_name: profile._json.name,
               last_name: "",
               email: profile._json.email,
-              role,
             };
             let result = await userModel.create(newUser);
             return done(null, result);
@@ -107,41 +103,31 @@ const initializePassport = () => {
     )
   );
 
-  // function cookieExtractor(req) {
-  //   let token = null;
-  //   if (req && req.cookies) {
-  //     token = req.cookies["rodsCookie"];
-  //   }
-  //   return token;
-  // }
-  
-  // passport.use(
-  //   "jwt",
-  //   new jwt.Strategy(
-  //     {
-  //       secretOrKey: JWT_SECRET,
-  //       jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
-  //     },
-  //     (jwt_payload, done) => {
-  //       try {
-  //         //Possible custom error
-  //         //done(null, false, {messages:'User doesn`t exist.'})
-  //         return done(null, jwt_payload); //done(null, false)
-  //       } catch (error) {
-  //         return done(error);
-  //       }
-  //     }
-  //   )
-  // );
-};
+  passport.use(
+    "current",
+    new JwtStrategy(
+      {
+        secretOrKey: JWT_SECRET,
+        jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+      },
+      async (jwtPayload, done) => {
+        try {
+          const user = await userModel.findOne({ _id: jwtPayload._id });
 
-function cookieExtractor(req) {
-  let token = null;
-  if (req.cookies.rodsCookie) {
-    token = req.cookies.rodsCookie;
-  }
-  return token;
-}
+          if (!user) {
+            return done(null, false);
+          }
+          // Si el usuario existe, devuélvelo
+          return done(null, user);
+        } catch (error) {
+          // Si hay un error, devuélvelo
+          return done(error, false);
+        }
+      }
+    )
+  );
+
+};
 
 passport.serializeUser((user, done) => {
   done(null, user._id);
