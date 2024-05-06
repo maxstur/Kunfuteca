@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { createHash } = require("../../utils");
 
 const userSchema = new mongoose.Schema({
   first_name: String,

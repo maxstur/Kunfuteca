@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
 const { JWT_SECRET } = require("./config/jwt.config");
 
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
@@ -18,7 +17,7 @@ const isValidPassword = (user, password) => {
 };
 
 const generateToken = (req, res, next) => {
-  let token = req.coockie.rodsCookie;
+  let token = req.cookies.rodsCookie;
   jwt.verify(token, JWT_SECRET, (error, decoded) => {
     if (error) {
       return res.status(403).send({ status: "error", error: "Not authorized" });

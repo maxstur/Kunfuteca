@@ -14,4 +14,7 @@ registerForm.addEventListener("submit", (event) => {
     }).then(res => res.json()).then((data)=>{
         console.log("Respuesta del servidor:", data);
     })
+    .catch((error) => {
+        console.error('Error:', error);
+    })
 });

@@ -1,19 +1,15 @@
 const passport = require("passport");
 const GithubStrategy = require("passport-github2");
-const local = require("passport-local");
 const userModel = require("../dao/models/users");
 const { createHash, isValidPassword } = require("../utils");
 const { JWT_SECRET } = require("../config/jwt.config");
+const local = require("passport-local");
 const jwt = require("jsonwebtoken");
-const { cookieExtractor } = require("../config/passport.config");
-const { ExtractJwt, Strategy: JwtStrategy } = require("passport-jwt");
-
-const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
   passport.use(
     "register",
-    new LocalStrategy(
+    new local.Strategy(
       {
         passReqToCallback: true,
         usernameField: "email",
@@ -49,7 +45,7 @@ const initializePassport = () => {
 
   passport.use(
     "login",
-    new LocalStrategy(
+    new local.Strategy(
       {
         usernameField: "email",
         session: false,
@@ -104,11 +100,12 @@ const initializePassport = () => {
   );
 
   passport.use(
-    "current",
-    new JwtStrategy(
+    //<---Esto tiene que ver con el token, no con la cookie--->
+    "jwt",
+    new jwt.Strategy(
       {
         secretOrKey: JWT_SECRET,
-        jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+        jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor]),
       },
       async (jwtPayload, done) => {
         try {
@@ -126,8 +123,15 @@ const initializePassport = () => {
       }
     )
   );
-
 };
+
+function cookieExtractor(req) {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies["rodsCookie"];
+  }
+  return token;
+}
 
 passport.serializeUser((user, done) => {
   done(null, user._id);

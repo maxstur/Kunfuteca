@@ -39,6 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /** Passport */
+
 initializePassport();
 app.use(passport.initialize());
 
@@ -85,6 +86,8 @@ io.on("connection", async (socket) => {
 // Rutas API - app.use
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
+// Ver si va const sessionsRouter = new SessonRouter();
+// Y app.use("/api/sessions", sessionsRouter.getRouter());
 app.use("/api/sessions", sessionsRouter);
 
 // Rutas de vista
