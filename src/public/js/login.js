@@ -19,7 +19,7 @@ loginForm.addEventListener("submit", (event) => {
         },
     }).then(res => {
         if(res.status == 200 ){
-            window.location.replace('/current');
+            window.location.replace('/products');
         }
     })
 })

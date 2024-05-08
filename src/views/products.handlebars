@@ -1,5 +1,19 @@
 <h1>Productos</h1>
 
+{{#if user}}
+
+  <div>
+    <h2>Welcome to elKunfuteca, {{user.name}}!</h2>
+    <p>This is your registered email: {{user.email}}</p>
+    <p><b>You are a golden {{user.role}}.</b></p>
+    <p>Hurry up! {{user.name}} Kunfuteca can't wait for you!</p>
+    <p>Your cart ID: {{user.cart._id}}</p>
+  </div>
+
+  <a href="/api/sessions/logout"><button>Logout</button></a>
+  <br /><br />
+
+{{/if}}
 {{#each products}}
   <div>
     <h2>{{this.description}}</h2>
@@ -26,6 +40,6 @@
 
 <!-- Add to cart -->
 <script>
-  function addToCart(productId) {
-  console.log('Agregando producto al carrito:', productId); }
+  function addToCart(productId) { console.log('Agregando producto al carrito:',
+  productId); }
 </script>

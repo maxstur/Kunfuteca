@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session");
 const productsRouter = require("./routes/products.router");
 const { viewsRouter } = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
@@ -9,11 +10,12 @@ const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
+const MongoStore = require("connect-mongo");
 const port = 8080;
 require("dotenv").config();
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
-const cookieParser = require("cookie-parser");
+
 
 /** DB Conection */
 mongoose
@@ -24,13 +26,31 @@ mongoose
 
 const app = express();
 
-/** Cookie Parser */
-app.use(cookieParser())
+// /** Cookie Parser */
+// app.use(cookieParser())
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
+
+// Session
+app.use(
+  session({
+    secret: "zFckEEhSecret",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
+      ttl: 3600,
+    }),
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      sameSite: 'strict'
+    },
+  })
+);
 
 
 /** Middlewares */
@@ -39,9 +59,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /** Passport */
-
 initializePassport();
 app.use(passport.initialize());
+app.use(passport.session());
 
 /**Port Config */
 const serverHttp = app.listen(port, () => {
@@ -86,8 +106,6 @@ io.on("connection", async (socket) => {
 // Rutas API - app.use
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
-// Ver si va const sessionsRouter = new SessonRouter();
-// Y app.use("/api/sessions", sessionsRouter.getRouter());
 app.use("/api/sessions", sessionsRouter);
 
 // Rutas de vista
