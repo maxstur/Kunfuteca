@@ -1,57 +1,52 @@
 const express = require("express");
-const session = require("express-session");
 const productsRouter = require("./routes/products.router");
-const { viewsRouter } = require("./routes/views.router");
+const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
-const sessionsRouter = require("./routes/sessions.router");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
-const MongoStore = require("connect-mongo");
-const port = 8080;
+// const MongoStore = require("connect-mongo");
 require("dotenv").config();
+const { sessionsRouter } = require("./routes/sessions.router");
+const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
-
+const cookieParser = require("cookie-parser");
+const { mongoConnectorLink, sesSecret, port } = require("./config/config");
 
 /** DB Conection */
-mongoose
-  .connect(
-    `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`
-  )
-  .then(() => console.log("DB connected"));
+mongoose.connect(mongoConnectorLink).then(() => console.log("DB connected"));
 
 const app = express();
 
-// /** Cookie Parser */
-// app.use(cookieParser())
+/** Cookie Parser */
+app.use(cookieParser());
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
 
-// Session
-app.use(
-  session({
-    secret: "zFckEEhSecret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: `mongodb+srv://maarashu:${process.env.MONGODB_PASS}@kunfuteca.xja1mzn.mongodb.net/login`,
-      ttl: 3600,
-    }),
-    cookie: {
-      secure: false,
-      httpOnly: true,
-      sameSite: 'strict'
-    },
-  })
-);
-
+// // Session
+// app.use(
+//   session({
+//     secret: sesSecret,
+//     resave: false,
+//     saveUninitialized: false,
+//     store: MongoStore.create({
+//       mongoUrl: mongoConnectorLink,
+//       ttl: 3600,
+//     }),
+//     cookie: {
+//       secure: false,
+//       httpOnly: true,
+//       sameSite: "strict",
+//     },
+//   })
+// );
 
 /** Middlewares */
 app.use(express.static(`${__dirname}/public`));
@@ -107,6 +102,8 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
+const usersRouter = new UserRouter();
+app.use ("/api/users", usersRouter.getRouter());
 
 // Rutas de vista
 app.use("/", viewsRouter);

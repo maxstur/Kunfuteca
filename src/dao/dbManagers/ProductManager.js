@@ -2,7 +2,7 @@ const productModel = require("../models/product.js");
 
 class ProductManager {
   async addProduct(productData) {
-    await productModel.create(productData);
+    return await productModel.create(productData);
   }
 
   async getProducts(queryParams = null) {
@@ -80,11 +80,11 @@ class ProductManager {
   }
 
   async updateProduct(id, newProduct) {
-    await productModel.updateOne({ _id: id }, newProduct);
+    return await productModel.updateOne({ _id: id }, newProduct);
   }
 
   async deleteProduct(id) {
-    await productModel.deleteOne({ _id: id });
+    return await productModel.deleteOne({ _id: id });
   }
 }
 

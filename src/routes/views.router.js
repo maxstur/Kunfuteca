@@ -1,51 +1,46 @@
 const { Router } = require("express");
 const CartsManager = require("../dao/dbManagers/CartsManager");
 const ProductManager = require("../dao/dbManagers/ProductManager");
-
-const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
-const productManager = new ProductManager(
-  __dirname + "/../files/products.json"
-);
+const cartsManager = new CartsManager( __dirname + "/../files/carts.json");
+const productManager = new ProductManager( __dirname + "/../files/products.json");
+const jwt = require("jsonwebtoken");
+const { getToken } = require("../utils");
 
 const viewsRouter = Router();
+const ViewsController = require("../controller/views.controller");
+
 
 /** Middlewares */
 const publicAccess = (req, res, next) => {
-  if (req.session.user) {
-    return res.redirect("/products");
-  } else {
+  // if (req.session.user) {
+  //   return res.redirect("/products");
+  // } else {
     next();
-  }
+  // }
 };
 
 const privateAccess = (req, res, next) => {
-  if (!req.session.user) {
-    console.log("Not logged in yet");
-    return res.redirect("/login");
-  }
+  // if (!req.session.user) {
+  //   console.log("Not logged in yet");
+  //   return res.redirect("/login");
+  // }
   next();
 };
 
 /** views */
+viewsRouter.get("/", ViewsController.getProductsHome)
+viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts)
+viewsRouter.get("/chat", ViewsController.getChat)
+//<---privateAccess--->
+//<---privateAccess--->
+//<---privateAccess--->
+viewsRouter.get("/products", ViewsController.getProducts);
 
-viewsRouter.get("/", async (req, res) => {
-  const products = await productManager.getProducts();
-  res.render("home", { products: products });
-});
-
-viewsRouter.get("/realtimeproducts", async (req, res) => {
-  const products = await productManager.getProducts();
-  res.render("realtimeproducts", { products: products });
-});
-
-viewsRouter.get("/chat", (req, res) => {
-  res.render("chat", {});
-});
-
-viewsRouter.get("/products", privateAccess, async (req, res) => {
+/** Repo PRofe Token */
+viewsRouter.get("/products", getToken, async (req, res) => {
   try {
-    const { user, docs, ...rest } = await productManager.getProducts(req.query);
-    res.render("products", { user: req.session.user, products: docs, ...rest });
+    const { docs, ...rest } = await productManager.getProducts(req.query);
+    res.render("products", { products: docs, user: req.tokenUser, ...rest });
   } catch (error) {
     res.send({ status: "error", error: error.message });
   }
@@ -85,15 +80,19 @@ viewsRouter.get("/carts/:cid", async (req, res) => {
 });
 
 /** Register */
-
 viewsRouter.get("/register", publicAccess, (req, res) => {
   res.render("register", {});
 });
 
 /** Login */
-
 viewsRouter.get("/login", publicAccess, (req, res) => {
   res.render("login");
+});
+
+viewsRouter.get("/current", privateAccess, (req, res) => {
+  // ó "/current", authToken, (req, res)
+  res.render("current", { carts, user: req.tokenUser });
+  //or res.render('profile',{user: {}})
 });
 
 viewsRouter.get("/resetPassword", publicAccess, (req, res) => {

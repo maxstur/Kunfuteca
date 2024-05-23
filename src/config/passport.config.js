@@ -1,24 +1,28 @@
 const passport = require("passport");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
-const Local = require("passport-local");
+const local = require("passport-local");
 const { createdHash, isValidPassword } = require("../utils");
 
-const LocalStrategy = Local.Strategy;
 const initializePassport = () => {
   passport.use(
     "register",
-    new LocalStrategy(
+    new local.LocalStrategy(
       {
         passReqToCallback: true,
         usernameField: "email",
+        session: false,
       },
       async (req, username, password, done) => {
-        const { first_name, last_name, email, age, role } = req.body;
-        let user = await userModel.findOne({ email: username });
         try {
-          if (user) {
-            return done(null, false);
+          const { first_name, last_name, email, age, role } = req.body;
+          if (!first_name || !last_name || !email || !age)
+            return done(null, false, { message: "All fields are required" });
+          const existingUser = await userModel.findOne({ email });
+          if (existingUser) {
+            return done(null, false, {
+              message: "User with that email already exists",
+            });
           }
           // Verificar el rol del usuario
           if (email == "adminCoder@coder.com" && password == "adminCod3r123") {
@@ -27,17 +31,16 @@ const initializePassport = () => {
             role = "user";
           }
           // Crear un nuevo usuario
-          const newUser = {
+          const newUserData = {
             first_name,
             last_name,
             email,
             age,
             password: createdHash(password),
-            confirm_password: createdHash(password),
             role,
           };
           // Crear el usuario
-          const result = await userModel.create(newUser);
+          let result = await userModel.create(newUserData);
           return done(null, result);
         } catch (error) {
           return done(error);
@@ -45,20 +48,22 @@ const initializePassport = () => {
       }
     )
   );
+
   passport.use(
     "login",
-    new LocalStrategy(
+    new local.LocalStrategy(
       {
         usernameField: "email",
+        session: false,
       },
       async (email, password, done) => {
         try {
           const user = await userModel.findOne({ email });
-          if (!user) {
-            return done(null, false);
+          if (!user) { 
+            return done(null, false, {message: "User not found or doesn't exist"});
           }
           if (!isValidPassword(user, password)) {
-            return done(null, false);
+            return done(null, false, {message: "Invalid password"});
           }
 
           return done(null, user);
@@ -77,6 +82,7 @@ const initializePassport = () => {
         clientID: "Iv1.99c8943a5483aae9",
         callbackURL: "http://localhost:8080/api/sessions/githubcallback",
         clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
+        session: false,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -90,7 +96,7 @@ const initializePassport = () => {
             let newUser = {
               first_name: profile._json.name,
               last_name: "",
-              age: 0,
+              age: 21,
               email: profile._json.email,
               role,
             };
