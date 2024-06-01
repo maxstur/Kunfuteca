@@ -2,19 +2,18 @@ const registerForm = document.getElementById("registerForm");
 
 registerForm.addEventListener("submit", (event) => {
     event.preventDefault();
+
     const data = new FormData(registerForm);
-    const obj = {};
-    data.forEach((value, key) => obj[key] = value);
+    const payload = {};
+
+    data.forEach((value, key) => payload[key] = value);
     fetch('/api/sessions/register', {
         method: 'POST',
-        body: JSON.stringify(obj),
+        body: JSON.stringify(payload),
         headers: {
             'Content-Type': 'application/json'
         },
-    }).then(res => res.json()).then((data)=>{
-        console.log("Respuesta del servidor:", data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
+    }).then(res => res.json()).then((res)=>{
+        console.log("Respuesta del servidor:", res);
     })
 });

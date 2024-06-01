@@ -1,0 +1,33 @@
+<h1>Current {{_id}} Profile</h1>
+
+<div id="currentProfile"></div>
+
+{{#ifEither first_name email}}
+  {{#if first_name}}
+    <p>Nombre: {{first_name}}</p>
+  {{/if}}
+  {{#if email}}
+    <p>Email: {{email}}</p>
+  {{/if}}
+{{else}}
+  {{#if age}}
+  <p>Hurry up! No time to loose with your {{age}} years old.</p>
+{{/ifEither}}
+
+
+{{#if user}}
+
+  <div>
+    <h2>Welcome to elKunfuteca, {{user.name}}!</h2>
+    <p>This is your registered email: {{user.email}}</p>
+    <p><b>You are a golden {{user.role}}.</b></p>
+    <p>Hurry up! {{user.name}} Kunfuteca can't wait for you!</p>
+    <p>Your cart ID: {{user.cart._id}}</p>
+  </div>
+
+  <a href="/api/sessions/logout"><button>Logout</button></a>
+  <br /><br />
+
+{{/if}}
+
+<script src="/js/current.js"></script>

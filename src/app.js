@@ -11,7 +11,7 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 // const MongoStore = require("connect-mongo");
 require("dotenv").config();
 const { sessionsRouter } = require("./routes/sessions.router");
-const session = require("express-session");
+// const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
@@ -102,6 +102,8 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
+
+// Rutas API - rutas de usuarios
 const usersRouter = new UserRouter();
 app.use ("/api/users", usersRouter.getRouter());
 

@@ -1,24 +1,29 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
-const jwt = require("jsonwebtoken");
-const { getToken } = require("../utils");
+const {
+  generateToken,
+  authToken,
+  createdHash,
+  isValidPassword,
+  checkRoleAuthorization,
+} = require("../utils");
+const initializePassport = require("../config/passport.config");
 
+initializePassport();
 const sessionsRouter = Router();
 
-sessionsRouter.post(
-  "/register",
-  passport.authenticate("register", {
-    failureRedirect: "api/sessions/registerFail",
-    session: false,
-  }),
-  async (req, res) => {
+router.post("/register", (req, res, next) => {
+  passport.authenticate("register", { session: false }, async (req, res) => {
+    const access_token = generateToken(user);
     res.send({
       status: "success",
-      message: "Registered successfully",
+      message: "User created successfully",
+      user,
+      access_token,
     });
-  }
-);
+  });
+});
 
 sessionsRouter.get("/registerFail", (req, res) => {
   res.status(400).send({
@@ -34,25 +39,27 @@ sessionsRouter.post(
     session: false,
   }),
   async (req, res) => {
-    const { _id, first_name, last_name, email, age, role } = req.user;
+    const { _id, first_name, last_name, email, age} = req.user;
+    let { role, cart } = req.user;
     const serializableUser = {
       _id: _id,
       first_name,
-      last_name,
+      last_name, 
       email,
       age,
       role,
       cart,
     };
-
-    const token = jwt.sign(serializableUser, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res.cookie("rodsCookie", token, { httpOnly: true });
+    const access_token = generateToken(serializableUser);
+    res.cookie("rodsCookie", access_token, { httpOnly: true });
     res.send({
       status: "success",
       message: "Logged in successfully",
+      user: serializableUser
     });
+    // Or
+    // const access_token = generateToken(user);
+    // res.send({ status: "success", message: "Logged in successfully", access_token });
   }
 );
 
@@ -96,11 +103,9 @@ sessionsRouter.get(
   }
 );
 
-sessionsRouter.get("/current", getToken, (req, res) => {
-    const user = req.tokenUser;
-    res.send({payload: user});
+sessionsRouter.get("/current", passport.authenticate('jwt'), checkRoleAuthorization("admin", "user"), (req, res) => { 
+  res.send({ status: "success", user: req.user });
 });
-
 
 sessionsRouter.get("/logout", (req, res) => {
   res.clearCookie("rodsCookie");

@@ -1,4 +1,4 @@
-const productModel = require("../models/product.js");
+const productModel = require("./models/product.js");
 
 
 /** El DAO sólo se encarga de la persistencia, no de la lógica. */
