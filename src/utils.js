@@ -21,7 +21,7 @@ const isValidPassword = (user, password) => {
 // Generamos un token
 const generateToken = (user) => {
   delete user.password;
-  const token = jwt.sign({ user }, process.env.JWT_PRIVATE_KEY, {
+  const token = jwt.sign({ user }, JWT_PRIVATE_KEY, {
     expiresIn: "2h",
   });
   return token;
@@ -35,7 +35,7 @@ const authToken = (req, res, next) => {
 
   // token, authorization header: "Bearer token"
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_PRIVATE_KEY, (err, credentials) => {
+  jwt.verify(token, JWT_PRIVATE_KEY, (err, credentials) => {
     if (err) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }

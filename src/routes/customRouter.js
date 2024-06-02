@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const { JWT_PRIVATE_KEY } = require("../config/config");
+const jwt = require("jsonwebtoken");
 
 class CustomRouter {
   constructor() {
@@ -16,6 +18,7 @@ class CustomRouter {
       try {
         await cb(...params);
       } catch (error) {
+        // console.log("Error applying callback in CustomRouter", error);
         params[1].status(500).send({ error: error.message });
       }
     });
@@ -69,17 +72,43 @@ class CustomRouter {
     );
   }
 
-  handlePolicies(policies) {//Por ej: ADMIN, USER, PUBLIC...
+  handlePolicies(policies) {
+    //Por ej: [ADMIN], [USER], [PUBLIC]...
     return (req, res, next) => {
-      if (policies.includes(req.user.role)) {
-        next();
-      } else {
-        res.status(403).send({ status: "error", error: "Forbidden" });
+      if (policies[0] == "PUBLIC" && policies.length == 1) {
+        return next();
       }
-    
+
+      const token = this.getToken(req);
+      if (!token) {
+        return res
+          .status(403)
+          .send({ status: "error", error: "Forbidden, not authorized" });
+      }
+
+      const user = jwt.verify(token, JWT_PRIVATE_KEY);
+
+      if (!policies.includes(user.role.toUpperCase())) {
+        return res
+          .status(403)
+          .send({ status: "error", error: "Forbidden, not authorized" });
+      }
+
+      req.user = user;
 
       next();
     };
+  }
+
+  getToken(req) {
+    const headersToken = req.headers.authorization;
+
+    if (!headersToken) {
+      return null;
+    }
+
+    const token = headersToken.split(" ")[1];
+    return token;
   }
 }
 
