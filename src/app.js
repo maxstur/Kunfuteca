@@ -1,25 +1,47 @@
 const express = require("express");
-const productsRouter = require("./routes/products.router");
-const viewsRouter = require("./routes/views.router");
-const cartsRouter = require("./routes/carts.router");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
-const ProductManager = require("./dao/dbManagers/ProductManager");
-const messageModel = require("./dao/models/message");
-const productManager = new ProductManager(__dirname + "/files/products.json");
-// const MongoStore = require("connect-mongo");
-require("dotenv").config();
-const { sessionsRouter } = require("./routes/sessions.router");
-// const session = require("express-session");
+const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
-const { mongoConnectorLink, sesSecret, port } = require("./config/config");
+const dotenv = require("dotenv");
+const { Command } = require("commander");
 
-/** DB Conection */
-mongoose.connect(mongoConnectorLink).then(() => console.log("DB connected"));
+/** Configs */
+const {
+  PORT,
+  ENVIRONMENT,
+  JWT_PRIVATE_KEY,
+  MONGO_CONNECTOR_LINK,
+  SESSION_SECRET,
+} = require("./config/environment.config");
 
+/** Routes */
+const productsRouter = require("./routes/products.router");
+const viewsRouter = require("./routes/views.router");
+const cartsRouter = require("./routes/carts.router");
+const sessionsRouter = require("./routes/sessions.router");
+//const CustomRouter = require("./routes/custom.router");
+const userRouter = require("./routes/user.router");
+
+const ProductManager = require("./dao/dbManagers/ProductManager");
+const messageModel = require("./dao/models/message");
+const productManager = new ProductManager(__dirname + "/files/products.json");
+
+/** Conf Commander & Dotenv*/
+const program = new Command();
+program.option("--mode <modo>").parse();
+
+const options = program.opts();
+console.log(options);
+
+dotenv.config({
+  path: `.env.${options.mode}`,
+});
+
+/** App */
 const app = express();
 
 /** Cookie Parser */
@@ -30,37 +52,44 @@ app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
 
-// // Session
-// app.use(
-//   session({
-//     secret: sesSecret,
-//     resave: false,
-//     saveUninitialized: false,
-//     store: MongoStore.create({
-//       mongoUrl: mongoConnectorLink,
-//       ttl: 3600,
-//     }),
-//     cookie: {
-//       secure: false,
-//       httpOnly: true,
-//       sameSite: "strict",
-//     },
-//   })
-// );
+mongoose
+  .connect(MONGO_CONNECTOR_LINK)
+  .then(() => console.log("DB connected successfully"))
+  .catch((err) => console.error("Could not connect to MongoDB", err));
+
 
 /** Middlewares */
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(session({
+  secret: SESSION_SECRET, 
+  resave: false,
+  saveUninitialized: false
+}));
+
 /** Passport */
 initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
-/**Port Config */
-const serverHttp = app.listen(port, () => {
-  console.log(`Servidor Kunfuteando en: http://localhost:${port}`);
+
+// /** Session */
+// app.use(
+//   session({
+//     store: MongoStore.create({
+//       mongoUrl: MONGO_CONNECTOR_LINK,
+//       ttl: 600,
+//     }),
+//     secret: SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
+const serverHttp = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}, in environment ${ENVIRONMENT}`);
 });
 
 // sockets.io
@@ -104,8 +133,8 @@ app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
 
 // Rutas API - rutas de usuarios
-const usersRouter = new UserRouter();
-app.use ("/api/users", usersRouter.getRouter());
+const UserRouter = new userRouter();
+app.use("/api/users", UserRouter.getRouter());
 
 // Rutas de vista
 app.use("/", viewsRouter);

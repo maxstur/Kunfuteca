@@ -1,6 +1,5 @@
 const productModel = require("./models/product.js");
 
-
 /** El DAO sólo se encarga de la persistencia, no de la lógica. */
 /** O sea el DAO no interactua con la base de datos */
 /** Solo se encarga de las operaciones CRUD */
@@ -10,7 +9,7 @@ class ProductsDao {
       return await productModel.paginate(opt, paginationOpt);
     }
 
-    return await productModel.find().lean();
+    return await productModel.find();
   }
 
   async getById(id) {

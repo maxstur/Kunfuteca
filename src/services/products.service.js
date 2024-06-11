@@ -33,7 +33,7 @@ class ProductsService {
         throw { message: "Page does not exist", status: 400 };
       }
     } else {
-      result = await this.dao.getAll();
+      result = await this.dao.getAll().lean();
     }
 
     let extraLinkParams = "";
@@ -61,22 +61,22 @@ class ProductsService {
     return product;
   }
 
-  async create(toy) {
-    return await this.dao.create(toy);
+  async create( product ) {
+    return await this.dao.create( product );
   }
 
-  async update(id, toy) {
-    const found = await this.dao.getById(id);
+  async update(id, product) {
+    const foundProduct = await this.dao.getById(id);
 
-    if (!found) {
+    if (!foundProduct) {
       throw { message: `The product ${id} does not exist`, status: 400 };
     }
-    return await this.dao.update(id, toy);
+    return await this.dao.update(id, product);
   }
 
   async delete(id) {
     const product = await this.dao.getById(id);
-    if (!product) throw { message: `The product ${id} does not exist`, status: 400 };
+    if (!product) throw { message: `The product ${id} can't be deleted, it does not exist`, status: 400 };
 
     return await this.dao.delete(id);
   }

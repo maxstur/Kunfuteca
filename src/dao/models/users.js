@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { createHash } = require("../../utils");
 
 const userSchema = new mongoose.Schema({
   first_name: String,
@@ -9,10 +8,9 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   age: Number,
-  password: String,
+  password: { type: String, required: true }, 
   cart: {
-    type: mongoose.SchemaTypes.ObjectId,
-    ref: "carts",
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "carts" }],
   },
   role: {
     type: String,

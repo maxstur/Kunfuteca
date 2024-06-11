@@ -17,12 +17,19 @@ form.addEventListener("submit", (e) => {
             'Content-Type': 'application/json'
         },
     }).then(res => {
-        if(res.status == 200 ){
-            alert("Contraseña cambiada con exito");
-
+        if(res.status === 200) {
+            alert("Password changed successfully.");
             setTimeout(() => {
                 window.location.replace('/login');
-            }, 0.1);
+            }, 1000); // 1 segundo de espera
+        } else {
+            alert("There was an unexpected error. Please try again or Register.");
+            setTimeout(() => {
+                window.location.replace('/register');
+            }, 1000); // 1 segundo de espera
         }
-    })
-})
+    }).catch(error => {
+        console.error("Error:", error);
+        alert("An unexpected error occurred. Please try again.");
+    });
+});

@@ -1,4 +1,4 @@
-const CustomRouter = require("./customRouter");
+const CustomRouter = require("./custom.router");
 
 class UserRouter extends CustomRouter {
   initialize() {
@@ -9,7 +9,7 @@ class UserRouter extends CustomRouter {
     // });
 
     this.get("/custom-router", ["PUBLIC"], (req, res, next) => {
-      res.sendUserError("You have reached UserRouter");
+      res.sendUserError("You have reached Premium Content, register to see it");
     });
 
     this.post("/custom-router", ["USER", "ADMIN"], (req, res) => {
@@ -29,13 +29,17 @@ class UserRouter extends CustomRouter {
       res.sendSuccess("Dear Admin, you have reached UserRouter");
     });
       
-    this.get("/simulate-server-error", ["ADMIN", "PUBLIC"], (req, res) => {
+    this.get("/simulate-server-error", ["PUBLIC"], (req, res) => {
       // Simulamos un error del servidor
-      res.sendServerError("This is an UserRouter Custom error");
+      res.sendServerError("Sorry something went wrong, try again later");
     });
 
     this.get("/custom-accounts", ["ADMIN"], (req, res) => {
       res.sendSuccess("Dear Admin, you have reached UserRouter");
+    });
+
+    this.get("/premium-route", ["PREMIUM", "ADMIN"], (req, res) => {
+      res.sendSuccess("Welcome, premium user!");
     });
       
   }

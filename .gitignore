@@ -1,4 +1,7 @@
 /node_modules
 .env
-jwt.config.js
+.env.development
+.env.test
+.env.production
 .txt
+/.vscode

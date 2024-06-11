@@ -1,6 +1,8 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
+const CustomRouter = require("./custom.router");
+
 const {
   generateToken,
   authToken,
@@ -8,21 +10,20 @@ const {
   isValidPassword,
   checkRoleAuthorization,
 } = require("../utils");
-const initializePassport = require("../config/passport.config");
 
-initializePassport();
 const sessionsRouter = Router();
 
-router.post("/register", (req, res, next) => {
-  passport.authenticate("register", { session: false }, async (req, res) => {
-    const access_token = generateToken(user);
-    res.send({
-      status: "success",
-      message: "User created successfully",
-      user,
-      access_token,
-    });
-  });
+sessionsRouter.post("/register", (req, res, next) => {
+  passport.authenticate("register", {
+    session: false,
+    failureRedirect: "/api/sessions/registerFail",
+  }),
+    async (req, res) => {
+      res.send({
+        status: "success",
+        message: "User registered successfuly",
+      });
+    };
 });
 
 sessionsRouter.get("/registerFail", (req, res) => {
@@ -35,38 +36,41 @@ sessionsRouter.get("/registerFail", (req, res) => {
 sessionsRouter.post(
   "/login",
   passport.authenticate("login", {
-    failureRedirect: "api/sessions/loginFail",
+    failureRedirect: "/api/sessions/loginFail",
     session: false,
   }),
   async (req, res) => {
-    const { _id, first_name, last_name, email, age} = req.user;
+    const { _id, first_name, last_name, email, age } = req.user;
     let { role, cart } = req.user;
+
     const serializableUser = {
-      _id: _id,
+      _id,
       first_name,
-      last_name, 
-      email,
-      age,
+      last_name,
       role,
+      age,
       cart,
+      email,
     };
-    const access_token = generateToken(serializableUser);
-    res.cookie("rodsCookie", access_token, { httpOnly: true });
+
+    const token = generateToken(serializableUser);
+    res.cookie("rodsCookie", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    });
+
     res.send({
       status: "success",
       message: "Logged in successfully",
-      user: serializableUser
     });
-    // Or
-    // const access_token = generateToken(user);
-    // res.send({ status: "success", message: "Logged in successfully", access_token });
   }
 );
 
 sessionsRouter.get("/loginFail", (req, res) => {
   res.status(400).send({
     status: "error",
-    error: "Login fail",
+    error: "Login has failed",
   });
 });
 
@@ -94,18 +98,21 @@ sessionsRouter.get(
       role,
       cart,
     };
-    const token = jwt.sign(serializableUser, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = generateToken(serializableUser);
+    res.cookie("rodsCookie", token, { httpOnly: true, secure: true, sameSite: "Strict" });
 
-    res.cookie("rodsCookie", token, { httpOnly: true });
-    res.redirect("/products");
+    res.redirect("/current");
   }
 );
 
-sessionsRouter.get("/current", passport.authenticate('jwt'), checkRoleAuthorization("admin", "user"), (req, res) => { 
-  res.send({ status: "success", user: req.user });
-});
+sessionsRouter.get(
+  "/current",
+  passport.authenticate("jwt", { session: false }),
+  checkRoleAuthorization("user", "admin"),
+  (req, res) => {
+    res.send({ status: "success", payload: req.user });
+  }
+);
 
 sessionsRouter.get("/logout", (req, res) => {
   res.clearCookie("rodsCookie");
@@ -123,10 +130,12 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
   }
 
   const user = await userModel.findOne({ email });
-
   if (!user) {
+    return res.status(400).send({
+      status: "error",
+      error: "User not found",
+    });
   }
-
   /** hasheamos la nueva contraseña */
   const hashedPassword = createdHash(password);
 
@@ -137,7 +146,7 @@ sessionsRouter.post("/resetPassword", async (req, res) => {
   res.send({
     status: "success",
     message: "Password changed successfully",
-    details: result,
+    payload: result,
   });
 });
 

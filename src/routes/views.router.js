@@ -1,102 +1,73 @@
 const { Router } = require("express");
 const CartsManager = require("../dao/dbManagers/CartsManager");
 const ProductManager = require("../dao/dbManagers/ProductManager");
-const cartsManager = new CartsManager( __dirname + "/../files/carts.json");
-const productManager = new ProductManager( __dirname + "/../files/products.json");
 const jwt = require("jsonwebtoken");
 const { getToken } = require("../utils");
+const ViewsController = require("../controllers/views.controller");
 
-const viewsRouter = Router();
-const ViewsController = require("../controller/views.controller");
+const cartsManager = new CartsManager();
+const productManager = new ProductManager();
 
-
-/** Middlewares */
-const publicAccess = (req, res, next) => {
-  // if (req.session.user) {
-  //   return res.redirect("/products");
-  // } else {
-    next();
-  // }
-};
-
-const privateAccess = (req, res, next) => {
-  // if (!req.session.user) {
-  //   console.log("Not logged in yet");
-  //   return res.redirect("/login");
-  // }
-  next();
-};
-
+const viewsRouter = Router(); 
 /** views */
-viewsRouter.get("/", ViewsController.getProductsHome)
-viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts)
-viewsRouter.get("/chat", ViewsController.getChat)
-//<---privateAccess--->
-//<---privateAccess--->
-//<---privateAccess--->
+viewsRouter.get("/", ViewsController.getProductsHome);
+viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts);
+viewsRouter.get("/chat", ViewsController.getChat);
+
+/** products with token */
 viewsRouter.get("/products", ViewsController.getProducts);
 
-/** Repo PRofe Token */
-viewsRouter.get("/products", getToken, async (req, res) => {
-  try {
-    const { docs, ...rest } = await productManager.getProducts(req.query);
-    res.render("products", { products: docs, user: req.tokenUser, ...rest });
-  } catch (error) {
-    res.send({ status: "error", error: error.message });
-  }
-});
-
 /** alternative */
-viewsRouter.get("/products.alt", async (req, res) => {
-  //alternativa
+viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
 
-  try {
-    const { docs, ...rest } = await productManager.getProducts(req.query);
-    res.render("products_alternative", { products: docs, ...rest });
-  } catch (error) {
-    res.send({ status: "error", error: error.message });
-  }
-});
-
-viewsRouter.get("/products/:pid", async (req, res) => {
-  //alternativa
-
-  try {
-    const product = await productManager.getProduct(req.params.pid);
-    res.render("product", { product: product });
-  } catch (error) {
-    res.send({ status: "error", error: error.message });
-  }
-});
+viewsRouter.get("/products/:pid", ViewsController.getProduct);
 /** ----------------- */
 
-viewsRouter.get("/carts/:cid", async (req, res) => {
-  try {
-    const cart = await cartsManager.getCart(req.params.cid);
-    res.render("cart", cart);
-  } catch (error) {
-    res.send({ status: "error", error: error.message });
-  }
-});
+viewsRouter.get("/carts/:cid", ViewsController.getCart);
 
-/** Register */
-viewsRouter.get("/register", publicAccess, (req, res) => {
-  res.render("register", {});
-});
+viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
-/** Login */
-viewsRouter.get("/login", publicAccess, (req, res) => {
-  res.render("login");
-});
+/** Register ["PUBLIC"],*/
+viewsRouter.get("/register", ViewsController.getRegister);
+/** Login ["PUBLIC"],*/ 
+viewsRouter.get("/login",  ViewsController.getLogin);
 
-viewsRouter.get("/current", privateAccess, (req, res) => {
-  // ó "/current", authToken, (req, res)
-  res.render("current", { carts, user: req.tokenUser });
-  //or res.render('profile',{user: {}})
-});
+// viewsRouter.get("/current", populate("cart").lean(), (req, res) => {
+//   // ó "/current", authToken, (req, res)
+//   res.render("current", { carts, user: req.tokenUser });
+//   //or res.render('profile',{user: {}})
+// });
 
-viewsRouter.get("/resetPassword", publicAccess, (req, res) => {
-  res.render("resetPassword", {});
-});
+// Or
+// Comparada con esta de arriba, ESTA DE ABAJO ES MAS LIMPIA
+// viewsRouter.get("/current", authToken, async (req, res) => {
+//   try {
+//     const user = await User.findById(req.tokenUser._id).populate('cart').lean();
 
-module.exports = { viewsRouter };
+//     if (!user) {
+//       return res.status(404).send({ status: "error", error: "User not found" });
+//     }
+
+//     res.render("current", { user });
+//   } catch (error) {
+//     res.status(500).send({ status: "error", error: "Server error" });
+//   }
+// });
+
+//Luego hacer un getBy(params)
+// async getBy(params){
+//   let result = await userModel.find(params).populate('cart').lean(); //<- this.model.find(params).lean();
+//}
+
+/**["PUBLIC"], */
+viewsRouter.get("/resetPassword",  ViewsController.getResetPassword);
+viewsRouter.get("/logout", ViewsController.getLogout);
+
+//Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
+
+viewsRouter.get("/calcNoBlocking", ViewsController.getCalcNoBlocking);
+
+viewsRouter.get("/soldProducts", ViewsController.getSoldProducts);
+  
+
+module.exports = viewsRouter;

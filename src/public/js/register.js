@@ -7,13 +7,16 @@ registerForm.addEventListener("submit", (event) => {
     const payload = {};
 
     data.forEach((value, key) => payload[key] = value);
+
     fetch('/api/sessions/register', {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
             'Content-Type': 'application/json'
         },
-    }).then(res => res.json()).then((res)=>{
-        console.log("Respuesta del servidor:", res);
+    }).then(res=>res.json()).then(res=>{
+        console.log(res)
     })
-});
+
+})
+

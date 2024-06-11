@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { JWT_PRIVATE_KEY } = require("./config/config");
+const { JWT_PRIVATE_KEY } = require("./config/environment.config");
 const passport = require("passport");
 
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
@@ -14,15 +14,14 @@ const createdHash = (password) => {
 
 // Validar que la contraseña coincida con "CompareSync" de bcrypt
 const isValidPassword = (user, password) => {
-  const isValid = bcrypt.compareSync(password, user.password);
-  return isValid;
+  return bcrypt.compareSync(password, user.password);
 };
 
 // Generamos un token
 const generateToken = (user) => {
   delete user.password;
-  const token = jwt.sign({ user }, JWT_PRIVATE_KEY, {
-    expiresIn: "2h",
+  const token = jwt.sign({ payload: user }, JWT_PRIVATE_KEY, {
+    expiresIn: "1h",
   });
   return token;
 };
@@ -30,7 +29,9 @@ const generateToken = (user) => {
 const authToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ status: "error", error: "Not authenticated" });
+    return res
+      .status(401)
+      .send({ status: "error", error: "Not authenticated" });
   }
 
   // token, authorization header: "Bearer token"
@@ -46,32 +47,44 @@ const authToken = (req, res, next) => {
 
 const callPassport = (strategy) => {
   return (req, res, next) => {
-    passport.authenticate(strategy, function(err, user, info) {
+    passport.authenticate(strategy, (err, user, info) => {
       if (err) {
         return res.status(500).send({ status: "error", error: err.message });
       }
       if (!user) {
-        return res.status(401).send({ status: "error", error: info.message ? info.message : info.toString() });
+        return res.status(401).send({
+          status: "error",
+          error: info.message ? info.message : info.toString(),
+        });
       }
       req.user = user;
       next();
-      
     })(req, res, next);
-  }
+  };
 };
 
-const checkRoleAuthorization = (targettedRole) => {
+const checkRoleAuthorization = (...targettedRoles) => {
   return (req, res, next) => {
-    if (req.user.role !== targettedRole) {
+    if (
+      !req.user ||
+      !req.user.role ||
+      !req.user.admin ||
+      !targettedRoles.includes(req.user.role)
+    ) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }
-
-    if (!req.user || !req.user._id || !req.user.role || !req.user.admin) {
-      return res.status(401).send({ status: "error", error: "Not authenticated, register and login first" });
-    }
-
     next();
+  };
+};
+
+function soldProducts() {
+  // llamada operaciónCompleja
+  console.log("Cantidad de productos vendidos (Cálculo bloqueante)...");
+  let result = 0;
+  for (let i = 0; i < 4000000000; i++) {
+    result += i;
   }
+  return result;
 }
 
 module.exports = {
@@ -80,5 +93,6 @@ module.exports = {
   generateToken,
   authToken,
   callPassport,
-  checkRoleAuthorization
+  checkRoleAuthorization,
+  soldProducts,
 };

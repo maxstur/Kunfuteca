@@ -1,14 +1,14 @@
 const { Router } = require("express");
-const { JWT_PRIVATE_KEY } = require("../config/config");
+const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 const jwt = require("jsonwebtoken");
 
 class CustomRouter {
   constructor() {
     this.router = Router();
-    this.inizialize();
+    this.initialize();
   }
 
-  inizialize() {}
+  initialize() {}
   getRouter() {
     return this.router;
   }
@@ -36,7 +36,7 @@ class CustomRouter {
     };
     next();
   }
-  get(path, policies, ...callback) {
+  get(path, policies, ...callbacks) {
     this.router.get(
       path,
       this.handlePolicies(policies),
@@ -45,7 +45,7 @@ class CustomRouter {
     );
   }
 
-  post(path, policies, ...callback) {
+  post(path, policies, ...callbacks) {
     this.router.post(
       path,
       this.handlePolicies(policies),
@@ -54,7 +54,7 @@ class CustomRouter {
     );
   }
 
-  put(path, policies, ...callback) {
+  put(path, policies, ...callbacks) {
     this.router.put(
       path,
       this.handlePolicies(policies),
@@ -63,7 +63,7 @@ class CustomRouter {
     );
   }
 
-  delete(path, policies, ...callback) {
+  delete(path, policies, ...callbacks) {
     this.router.delete(
       path,
       this.handlePolicies(policies),
@@ -89,6 +89,14 @@ class CustomRouter {
       const user = jwt.verify(token, JWT_PRIVATE_KEY);
 
       if (!policies.includes(user.role.toUpperCase())) {
+        return res
+          .status(403)
+          .send({ status: "error", error: "Forbidden, not authorized" });
+      }
+
+      // Check if the user's role is in the allowed policies
+      const userRole = user.role.toUpperCase();
+      if (!policies.includes(userRole) && !policies.includes("PREMIUM")) {
         return res
           .status(403)
           .send({ status: "error", error: "Forbidden, not authorized" });
