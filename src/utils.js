@@ -45,6 +45,18 @@ const authToken = (req, res, next) => {
   });
 };
 
+// Obtener el token de la cookie y verificarlo
+const getToken = (req, res, next) => {
+  let token = req.cookies.rodsCookie;
+  if (!token)
+    return res.status(403).send({ status: "error", error: "Not authorized" });
+  jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
+    if (err) res.status(403).send("Not authorized");
+    req.tokenUser = decoded.payload;
+    next();
+  });
+};
+
 const callPassport = (strategy) => {
   return (req, res, next) => {
     passport.authenticate(strategy, (err, user, info) => {
@@ -95,4 +107,5 @@ module.exports = {
   callPassport,
   checkRoleAuthorization,
   soldProducts,
+  getToken,
 };

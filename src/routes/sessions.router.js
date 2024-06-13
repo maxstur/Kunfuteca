@@ -1,30 +1,42 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
-const CustomRouter = require("./custom.router");
-
+const jwt = require("jsonwebtoken");
 const {
   generateToken,
   authToken,
   createdHash,
   isValidPassword,
   checkRoleAuthorization,
+  getToken,
 } = require("../utils");
+const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 const sessionsRouter = Router();
 
-sessionsRouter.post("/register", (req, res, next) => {
+sessionsRouter.post("/register",
   passport.authenticate("register", {
     session: false,
     failureRedirect: "/api/sessions/registerFail",
-  }),
-    async (req, res) => {
+  }),  
+  async (req, res) => {
+    try {
+      const user = req.user;
+  
+      const token = jwt.sign({ payload: user }, JWT_PRIVATE_KEY, { expiresIn: '1h' });
+      res.cookie('rodsCookie', token, { httpOnly: true, secure: true });
+  
       res.send({
         status: "success",
-        message: "User registered successfuly",
+        message: "User registered successfully",
       });
-    };
-});
+    } catch (error) {
+      res.status(500).send({
+        status: "error",
+        message: "Registration failed",
+      });
+    }
+  });
 
 sessionsRouter.get("/registerFail", (req, res) => {
   res.status(400).send({
@@ -39,12 +51,12 @@ sessionsRouter.post(
     failureRedirect: "/api/sessions/loginFail",
     session: false,
   }),
-  async (req, res) => {
+  (req, res) => {
     const { _id, first_name, last_name, email, age } = req.user;
     let { role, cart } = req.user;
 
     const serializableUser = {
-      _id,
+      id: _id,
       first_name,
       last_name,
       role,
@@ -53,7 +65,7 @@ sessionsRouter.post(
       email,
     };
 
-    const token = generateToken(serializableUser);
+    const token = generateToken(serializableUser, JWT_PRIVATE_KEY);
     res.cookie("rodsCookie", token, {
       httpOnly: true,
       secure: true,
@@ -98,19 +110,33 @@ sessionsRouter.get(
       role,
       cart,
     };
-    const token = generateToken(serializableUser);
+    const token = generateToken(serializableUser, JWT_PRIVATE_KEY);
     res.cookie("rodsCookie", token, { httpOnly: true, secure: true, sameSite: "Strict" });
 
-    res.redirect("/current");
+    res.redirect("/products");
   }
 );
 
 sessionsRouter.get(
-  "/current",
-  passport.authenticate("jwt", { session: false }),
-  checkRoleAuthorization("user", "admin"),
+  "/current", 
+  (req, res, next) => {
+    const token = getToken(req);
+    if (!token) {
+      return res.status(403).send({ status: "error", error: "Not authorized" });
+    }
+    const user = verifyToken(token);
+    if (!user) {
+      return res.status(403).send({ status: "error", error: "Not authorized" });
+    }
+    req.user = user;
+    next();
+  },
   (req, res) => {
-    res.send({ status: "success", payload: req.user });
+    res.send({
+      status: "success",
+      user: req.user,
+      message: "User retrieved successfully",
+    });
   }
 );
 

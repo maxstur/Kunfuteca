@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
   fetch("api/sessions/current", {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      Authorization: `Bearer ${localStorage.getItem ("token")}`,
     },
   })
     .then((res) => {

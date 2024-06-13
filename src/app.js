@@ -2,7 +2,7 @@ const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
-const session = require("express-session");
+// const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
@@ -63,30 +63,17 @@ app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(session({
-  secret: SESSION_SECRET, 
-  resave: false,
-  saveUninitialized: false
-}));
+// app.use(session({
+//   secret: SESSION_SECRET, 
+//   resave: false,
+//   saveUninitialized: false
+// }));
 
 /** Passport */
 initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-// /** Session */
-// app.use(
-//   session({
-//     store: MongoStore.create({
-//       mongoUrl: MONGO_CONNECTOR_LINK,
-//       ttl: 600,
-//     }),
-//     secret: SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
 
 const serverHttp = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}, in environment ${ENVIRONMENT}`);
@@ -131,10 +118,6 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-
-// Rutas API - rutas de usuarios
 const UserRouter = new userRouter();
 app.use("/api/users", UserRouter.getRouter());
-
-// Rutas de vista
 app.use("/", viewsRouter);
