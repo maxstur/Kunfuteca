@@ -1,5 +1,4 @@
 const passport = require("passport");
-const jwt = require("jsonwebtoken");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
