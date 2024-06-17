@@ -16,15 +16,11 @@ viewsRouter.get("/chat", ViewsController.getChat);
 
 /** products with token */
 viewsRouter.get("/products", ViewsController.getProducts);
-
-/** alternative */
 viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
-
 viewsRouter.get("/products/:pid", ViewsController.getProduct);
-/** ----------------- */
 
+/** Cart products with token*/
 viewsRouter.get("/carts/:cid", ViewsController.getCart);
-
 viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
 /** Register ["PUBLIC"],*/
@@ -66,7 +62,6 @@ viewsRouter.get("/logout", ViewsController.getLogout);
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 
 viewsRouter.get("/calcNoBlocking", ViewsController.getCalcNoBlocking);
-
 viewsRouter.get("/soldProducts", ViewsController.getSoldProducts);
   
 
