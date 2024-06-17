@@ -14,6 +14,7 @@ const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
+// const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
@@ -63,8 +64,13 @@ mongoose
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
+/** Middlewares */
+app.use(express.static(`${__dirname}/public`));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // app.use(session({
-//   secret: SESSION_SECRET,
+//   secret: SESSION_SECRET, 
 //   resave: false,
 //   saveUninitialized: false
 // }));
@@ -118,10 +124,6 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-
-// Rutas API - rutas de usuarios
 const UserRouter = new userRouter();
 app.use("/api/users", UserRouter.getRouter());
-
-// Rutas de vista
 app.use("/", viewsRouter);

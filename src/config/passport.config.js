@@ -1,8 +1,8 @@
 const passport = require("passport");
+const local = require("passport-local");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
-const local = require("passport-local");
 const { createdHash, isValidPassword } = require("../utils");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
@@ -52,22 +52,25 @@ const initializePassport = () => {
           const { first_name, last_name, age } = req.body;
           let { role } = req.body;
 
-          // Validar los campos
-          if (!first_name || !last_name || !age)
+          // Validamos los campos
+          if (!first_name || !last_name || !email || !password || !age)
             return done(null, false, { message: "All fields are required" });
+          
+          // Verificamos si el usuario ya existe
           const existingUser = await userModel.findOne({ email });
           if (existingUser) {
             return done(null, false, {
               message: "User with that email already exists",
             });
           }
-          // Verificar el rol del usuario
+          // Verificamos el rol del usuario
           if (email == "adminCoder@coder.com" && password == "adminCod3r123") {
             role = "admin";
           } else {
             role = "user";
           }
-          // Crear un nuevo usuario
+
+          // Creamos un nuevo usuario
           const newUserData = {
             first_name,
             last_name,
@@ -76,8 +79,11 @@ const initializePassport = () => {
             password: createdHash(password),
             role,
           };
-          // Crear el usuario
+
+          // Creamos el usuario
           let result = await userModel.create(newUserData);
+
+          // Retornamos el usuario
           return done(null, result);
         } catch (error) {
           return done(error);

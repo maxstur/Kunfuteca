@@ -19,6 +19,6 @@ loginForm.addEventListener("submit", (event) => {
             'Content-Type': 'application/json'
         },
     }).then(res => res.json()).then((res)=>{
-        localStorage.setItem("access_token", res.access_token);
+        localStorage.setItem ("token", res.token);
     })
 })

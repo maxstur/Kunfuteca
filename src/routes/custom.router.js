@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 const jwt = require("jsonwebtoken");
+const { getToken } = require("../utils");
 
 class CustomRouter {
   constructor() {
@@ -79,15 +80,15 @@ class CustomRouter {
         return next();
       }
 
-      const token = this.getToken(req);
+      const token = getToken(req);
       if (!token) {
         return res
           .status(403)
-          .send({ status: "error", error: "Forbidden, not authorized" });
+          .send({ status: "error", error: "Not authorized" });
       }
-
       const user = jwt.verify(token, JWT_PRIVATE_KEY);
 
+      // Check if the user's role is in the allowed policies
       if (!policies.includes(user.role.toUpperCase())) {
         return res
           .status(403)
@@ -106,17 +107,6 @@ class CustomRouter {
 
       next();
     };
-  }
-
-  getToken(req) {
-    const headersToken = req.headers.authorization;
-
-    if (!headersToken) {
-      return null;
-    }
-
-    const token = headersToken.split(" ")[1];
-    return token;
   }
 }
 
