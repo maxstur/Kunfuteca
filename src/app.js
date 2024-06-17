@@ -14,7 +14,6 @@ const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
-const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
@@ -48,8 +47,11 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 /** App */
 const app = express();
 
-/** Cookie Parser */
+/** Cookie Parser & Middlewares*/
 app.use(cookieParser());
+app.use(express.static(`${__dirname}/public`));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
@@ -60,11 +62,6 @@ mongoose
   .connect(MONGO_CONNECTOR_LINK)
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.error("Could not connect to MongoDB", err));
-
-/** Middlewares */
-app.use(express.static(`${__dirname}/public`));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // app.use(session({
 //   secret: SESSION_SECRET,
@@ -81,7 +78,6 @@ app.use(passport.session());
 const serverHttp = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}, in environment ${ENVIRONMENT}`);
 });
-
 
 // sockets.io
 const io = new Server(serverHttp);

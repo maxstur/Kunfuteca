@@ -19,6 +19,16 @@ sessionsRouter.post("/register", (req, res, next) => {
     failureRedirect: "/api/sessions/registerFail",
   }),
     async (req, res) => {
+      const newUserData = {
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email,
+        age: req.body.age,
+        password: createdHash(req.body.password),
+        role: "user",
+      }
+      
+      res.cookie("rodsCookie", "", { maxAge: 1 });
       res.send({
         status: "success",
         message: "User registered successfuly",
