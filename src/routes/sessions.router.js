@@ -14,29 +14,20 @@ const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 const sessionsRouter = Router();
 
-sessionsRouter.post("/register",
+sessionsRouter.post(
+  "/register",
   passport.authenticate("register", {
     session: false,
     failureRedirect: "/api/sessions/registerFail",
-  }),  
-  async (req, res) => {
-    try {
-      const user = req.user;
-  
-      const token = jwt.sign({ payload: user }, JWT_PRIVATE_KEY, { expiresIn: '1h' });
-      res.cookie('rodsCookie', token, { httpOnly: true, secure: true });
-  
-      res.send({
-        status: "success",
-        message: "User registered successfully",
-      });
-    } catch (error) {
-      res.status(500).send({
-        status: "error",
-        message: "Registration failed",
-      });
-    }
-  });
+    passReqToCallback: true,
+  }),
+  (req, res) => {
+    res.send({
+      status: "success",
+      message: "User registered successfully",
+    });
+  }
+);
 
 sessionsRouter.get("/registerFail", (req, res) => {
   res.status(400).send({
@@ -111,14 +102,18 @@ sessionsRouter.get(
       cart,
     };
     const token = generateToken(serializableUser, JWT_PRIVATE_KEY);
-    res.cookie("rodsCookie", token, { httpOnly: true, secure: true, sameSite: "Strict" });
+    res.cookie("rodsCookie", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    });
 
     res.redirect("/products");
   }
 );
 
 sessionsRouter.get(
-  "/current", 
+  "/current",
   (req, res, next) => {
     const token = getToken(req);
     if (!token) {

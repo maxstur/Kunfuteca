@@ -4,7 +4,15 @@ const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
 const { createdHash, isValidPassword } = require("../utils");
-const { JWT_PRIVATE_KEY } = require("../config/environment.config");
+const {
+  JWT_PRIVATE_KEY,
+  EMAIL_ADMIN_1,
+  EMAIL_ADMIN_2,
+  EMAIL_ADMIN_3,
+  PASSWORD_ADMIN_1,
+  PASSWORD_ADMIN_2,
+  PASSWORD_ADMIN_3,
+} = require("../config/environment.config");
 
 function cookieExtractor(req) {
   let token = null;
@@ -55,7 +63,7 @@ const initializePassport = () => {
           // Validamos los campos
           if (!first_name || !last_name || !email || !password || !age)
             return done(null, false, { message: "All fields are required" });
-          
+
           // Verificamos si el usuario ya existe
           const existingUser = await userModel.findOne({ email });
           if (existingUser) {
@@ -64,7 +72,11 @@ const initializePassport = () => {
             });
           }
           // Verificamos el rol del usuario
-          if (email == "adminCoder@coder.com" && password == "adminCod3r123") {
+          if (
+            (email == EMAIL_ADMIN_1 && password == PASSWORD_ADMIN_1) ||
+            (email == EMAIL_ADMIN_2 && password == PASSWORD_ADMIN_2) ||
+            (email == EMAIL_ADMIN_3 && password == PASSWORD_ADMIN_3)
+          ) {
             role = "admin";
           } else {
             role = "user";
@@ -132,7 +144,11 @@ const initializePassport = () => {
       async (accessToken, refreshToken, profile, done) => {
         try {
           let role = "user";
-          if (profile._json.email == "adminCoder@coder.com") {
+          if (
+            profile._json.email == EMAIL_ADMIN_1 ||
+            profile._json.email == EMAIL_ADMIN_2 ||
+            profile._json.email == EMAIL_ADMIN_3
+          ) {
             role = "admin";
           }
           const user = await userModel.findOne({ email: profile._json.email });
