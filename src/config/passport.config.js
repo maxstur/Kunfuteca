@@ -12,6 +12,7 @@ const {
   PASSWORD_ADMIN_1,
   PASSWORD_ADMIN_2,
   PASSWORD_ADMIN_3,
+  PASSWORD_CHARSET,
 } = require("../config/environment.config");
 
 function cookieExtractor(req) {
@@ -30,9 +31,9 @@ const initializePassport = () => {
         secretOrKey: JWT_PRIVATE_KEY,
         jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
       },
-      async (jwt_payload, done) => {
+      async (jwtPayload, done) => {
         try {
-          const user = await userModel.findById(jwt_payload.user._id);
+          const user = await userModel.findById(jwtPayload.user._id);
 
           if (!user) {
             return done(null, false, {
@@ -41,6 +42,7 @@ const initializePassport = () => {
           }
           return done(null, user);
         } catch (error) {
+          console.log("Error in passport config", error);
           return done(error, false);
         }
       }
@@ -90,6 +92,7 @@ const initializePassport = () => {
             age,
             password: createdHash(password),
             role,
+            cart: [],
           };
 
           // Creamos el usuario
@@ -145,20 +148,22 @@ const initializePassport = () => {
         try {
           let role = "user";
           if (
-            profile._json.email == EMAIL_ADMIN_1 ||
-            profile._json.email == EMAIL_ADMIN_2 ||
-            profile._json.email == EMAIL_ADMIN_3
+            [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
+              profile._json.email
+            )
           ) {
             role = "admin";
           }
           const user = await userModel.findOne({ email: profile._json.email });
 
           if (!user) {
+            // Crear nuevo usuario
             let newUser = {
-              first_name: profile._json.name,
+              first_name: profile._json.name.split(" ")[0],
               last_name: "",
               age: 21,
               email: profile._json.email,
+              cart: [],
               role,
             };
             let result = await userModel.create(newUser);

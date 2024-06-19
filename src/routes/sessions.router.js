@@ -2,14 +2,7 @@ const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
 const jwt = require("jsonwebtoken");
-const {
-  generateToken,
-  authToken,
-  createdHash,
-  isValidPassword,
-  checkRoleAuthorization,
-  getToken,
-} = require("../utils");
+const { generateToken, createdHash } = require("../utils");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 const sessionsRouter = Router();
@@ -114,30 +107,25 @@ sessionsRouter.get(
 
 sessionsRouter.get(
   "/current",
-  (req, res, next) => {
-    const token = getToken(req);
-    if (!token) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    const user = verifyToken(token);
-    if (!user) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    req.user = user;
-    next();
-  },
+  passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    res.send({
-      status: "success",
-      user: req.user,
-      message: "User retrieved successfully",
-    });
+    try {
+      const user = req.user;
+      res.status(200).json({ status: "success", payload: user });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message,
+      });
+    }
   }
 );
 
 sessionsRouter.get("/logout", (req, res) => {
   res.clearCookie("rodsCookie");
   res.redirect("/login");
+
+  res.send({ status: "success", message: "User logged out successfully" });
 });
 
 sessionsRouter.post("/resetPassword", async (req, res) => {

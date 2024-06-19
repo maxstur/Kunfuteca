@@ -19,13 +19,14 @@ const isValidPassword = (user, password) => {
 
 // Generamos un token
 const generateToken = (user) => {
-  delete user.password;
-  const token = jwt.sign({ payload: user }, JWT_PRIVATE_KEY, {
+  const { password, ...deletePasswordFromUser } = user;
+  const token = jwt.sign({ payload: deletePasswordFromUser }, JWT_PRIVATE_KEY, {
     expiresIn: "1h",
   });
   return token;
 };
 
+// Para estrategias basadas en Headers con JWT
 const authToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -36,22 +37,24 @@ const authToken = (req, res, next) => {
 
   // token, authorization header: "Bearer token"
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, JWT_PRIVATE_KEY, (err, credentials) => {
+  jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }
-    req.user = credentials.user;
+    req.tokenUser = decoded.payload;
     next();
   });
 };
 
-// Obtener el token de la cookie y verificarlo
+// Obtener el token de la cookie y verificarlo. Para estrategias basadas en Cookies
 const getToken = (req, res, next) => {
   let token = req.cookies.rodsCookie;
-  if (!token)
+  if (!token) {
     return res.status(403).send({ status: "error", error: "Not authorized" });
+  }
+
   jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
-    if (err) res.status(403).send("Not authorized");
+    if (err) res.status(403).send({ status: "error", error: "Not authorized" });
     req.tokenUser = decoded.payload;
     next();
   });

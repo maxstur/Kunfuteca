@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 const jwt = require("jsonwebtoken");
-const { getToken } = require("../utils");
+const { authToken } = require("../utils");
 
 class CustomRouter {
   constructor() {
@@ -76,35 +76,27 @@ class CustomRouter {
   handlePolicies(policies) {
     //Por ej: [ADMIN], [USER], [PUBLIC]...
     return (req, res, next) => {
-      if (policies[0] == "PUBLIC" && policies.length == 1) {
-        return next();
-      }
+      const user = req.user;
 
-      const token = getToken(req);
-      if (!token) {
+      if (!user) {
         return res
-          .status(403)
-          .send({ status: "error", error: "Not authorized" });
-      }
-      const user = jwt.verify(token, JWT_PRIVATE_KEY);
-
-      // Check if the user's role is in the allowed policies
-      if (!policies.includes(user.role.toUpperCase())) {
-        return res
-          .status(403)
-          .send({ status: "error", error: "Forbidden, not authorized" });
+          .status(401)
+          .json({ status: "error", error: "Forbidden, not authenticated" });
       }
 
       // Check if the user's role is in the allowed policies
       const userRole = user.role.toUpperCase();
-      if (!policies.includes(userRole) && !policies.includes("PREMIUM")) {
+      if (!policies.includes(userRole) && !policies.includes("PREMIUM", "ADMIN", "USER")) {
         return res
           .status(403)
           .send({ status: "error", error: "Forbidden, not authorized" });
       }
 
-      req.user = user;
+      if (policies.includes("PUBLIC") && policies.length == 1) {
+        return next();
+      }
 
+      req.user = user;
       next();
     };
   }

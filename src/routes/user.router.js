@@ -1,4 +1,5 @@
 const CustomRouter = require("./custom.router");
+const { authToken } = require("../utils");
 
 class UserRouter extends CustomRouter {
   initialize() {
@@ -7,6 +8,18 @@ class UserRouter extends CustomRouter {
     //   console.log("Here, User Router exttend Custom Router"); next()}, (req,res)=>{
     //   res.send("You have reached a custom UserRouter")
     // });
+
+    this.get(
+      "/current",
+      handlePolicies(["USER", "ADMIN", "PREMIUM"]),
+      (req, res) => {
+        res.send({
+          status: "success",
+          message: "You have reached the current user route",
+          user: req.tokenUser,
+        });
+      }
+    );
 
     this.get("/custom-router", ["PUBLIC"], (req, res, next) => {
       res.sendUserError("You have reached Premium Content, register to see it");
@@ -28,7 +41,7 @@ class UserRouter extends CustomRouter {
       }
       res.sendSuccess("Dear Admin, you have reached UserRouter");
     });
-      
+
     this.get("/simulate-server-error", ["PUBLIC"], (req, res) => {
       // Simulamos un error del servidor
       res.sendServerError("Sorry something went wrong, try again later");
@@ -41,7 +54,6 @@ class UserRouter extends CustomRouter {
     this.get("/premium-route", ["PREMIUM", "ADMIN"], (req, res) => {
       res.sendSuccess("Welcome, premium user!");
     });
-      
   }
 }
 

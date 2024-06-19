@@ -14,19 +14,11 @@ const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
-// const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
 
 /** Configs */
-// const {
-//   PORT,
-//   ENVIRONMENT,
-//   JWT_PRIVATE_KEY,
-//   MONGO_CONNECTOR_LINK,
-//   SESSION_SECRET,
-// } = require("./config/environment.config");
 const PORT = process.env.PORT;
 const ENVIRONMENT = process.env.ENVIRONMENT;
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
@@ -69,16 +61,9 @@ app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use(session({
-//   secret: SESSION_SECRET, 
-//   resave: false,
-//   saveUninitialized: false
-// }));
-
 /** Passport */
 initializePassport();
 app.use(passport.initialize());
-app.use(passport.session());
 
 // Server Config
 const serverHttp = app.listen(PORT, () => {

@@ -1,8 +1,10 @@
 const ProductManager = require("../dao/dbManagers/ProductManager");
 const productManager = new ProductManager();
 const { fork } = require("child_process");
-const { populate } = require("../dao/models/users");
 const { soldProducts } = require("../utils");
+const CartsManager = require("../dao/dbManagers/CartsManager");
+const userModel = require("../dao/models/users");
+const cartsManager = new CartsManager();
 
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 let visitorsCounter = 0;
@@ -33,12 +35,12 @@ class ViewsController {
   static async getChat(req, res) {
     res.render("chat", {});
   }
-  
+
   /** Products with Token user: req.TokenUser, ["PUBLIC"],*/
   static async getProducts(req, res) {
     try {
       const { docs, ...rest } = await productManager.getProducts(req.query);
-      
+
       res.render("products", { products: docs, ...rest });
     } catch (error) {
       res.send({ status: "error", error: error.message });
@@ -90,17 +92,30 @@ class ViewsController {
     res.render("login", {});
   }
 
-  /** Espacion para current */
-  /** Espacion para current */
-  /** Espacion para current */
-  /** Espacion para current */
+  static async getCurrent(req, res) {
+    if (req.user) {
+      const user = await userModel.findOne({ _id: req.user._id });
+      res.render("current", { user });
+    } else {
+      res.send({ status: "error", error: "User not authenticated" });
+    }
+  }
 
   static async getResetPassword(req, res) {
-    res.render("resetPassword", {});
+    res.render("resetPassword", { token: req.params.token });
   }
 
   static async getLogout(req, res) {
-    res.render("logout", {});
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).send({ status: "error", error: err });
+      }
+
+      res.clearCookie("rodsCookie");
+      res.redirect("/login");
+
+      res.send({ status: "success", message: "User logged out successfully" });
+    });
   }
 
   static async getCalcNoBlocking(req, res) {
