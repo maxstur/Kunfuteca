@@ -1,6 +1,6 @@
 const ProductManager = require("../dao/dbManagers/ProductManager");
-
 const productManager = new ProductManager();
+
 
 class ProductsController {
   static async getAll(req, res) {

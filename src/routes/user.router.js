@@ -1,5 +1,7 @@
 const CustomRouter = require("./custom.router");
-const { authToken } = require("../utils");
+const { checkRoleAuthorization } = require("../utils");
+
+const customRouter  = new CustomRouter();
 
 class UserRouter extends CustomRouter {
   initialize() {
@@ -11,12 +13,12 @@ class UserRouter extends CustomRouter {
 
     this.get(
       "/current",
-      handlePolicies(["USER", "ADMIN", "PREMIUM"]),
+      CustomRouter.handlePolicies(["USER", "ADMIN"]),
       (req, res) => {
         res.send({
           status: "success",
-          message: "You have reached the current user route",
-          user: req.tokenUser,
+          message: "You have reached the current user router",
+          user: req.user,
         });
       }
     );

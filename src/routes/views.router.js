@@ -1,5 +1,7 @@
 const { Router } = require("express");
 const { authToken } = require("../utils");
+// const { publicAccess } = require("../middlewares/prublicAccess.middleware");
+// const { privateAccess } = require("../middlewares/privateAccess.middleware");
 const ViewsController = require("../controllers/views.controller");
 
 const viewsRouter = Router();
@@ -10,7 +12,7 @@ viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts);
 viewsRouter.get("/chat", ViewsController.getChat);
 
 /** products with token */
-viewsRouter.get("/products", ViewsController.getProducts);
+viewsRouter.get("/products", authToken, ViewsController.getProducts);
 viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
 viewsRouter.get("/products/:pid", ViewsController.getProduct);
 
@@ -23,9 +25,13 @@ viewsRouter.get("/register", ViewsController.getRegister);
 /** Login ["PUBLIC"],*/
 viewsRouter.get("/login", ViewsController.getLogin);
 /** Current user ["PRIVATE"] */
-viewsRouter.get("/current", ViewsController.getCurrent);
+viewsRouter.get("/current", authToken, ViewsController.getCurrent);
 /**["PUBLIC"], */
-viewsRouter.get("/resetPassword/:token", ViewsController.getResetPassword);
+viewsRouter.get(
+  "/resetPassword/:token",
+  authToken,
+  ViewsController.getResetPassword
+);
 /** Logout ["PRIVATE"] */
 viewsRouter.get("/logout", authToken, ViewsController.getLogout);
 

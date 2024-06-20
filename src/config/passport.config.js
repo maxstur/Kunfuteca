@@ -4,16 +4,9 @@ const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
 const { createdHash, isValidPassword } = require("../utils");
-const {
-  JWT_PRIVATE_KEY,
-  EMAIL_ADMIN_1,
-  EMAIL_ADMIN_2,
-  EMAIL_ADMIN_3,
-  PASSWORD_ADMIN_1,
-  PASSWORD_ADMIN_2,
-  PASSWORD_ADMIN_3,
-  PASSWORD_CHARSET,
-} = require("../config/environment.config");
+
+/** Configs */
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
 function cookieExtractor(req) {
   let token = null;
@@ -70,7 +63,7 @@ const initializePassport = () => {
           const existingUser = await userModel.findOne({ email });
           if (existingUser) {
             return done(null, false, {
-              message: "User with that email already exists",
+              alert: "User with that email already exists, please login",
             });
           }
           // Verificamos el rol del usuario
@@ -92,7 +85,6 @@ const initializePassport = () => {
             age,
             password: createdHash(password),
             role,
-            cart: [],
           };
 
           // Creamos el usuario

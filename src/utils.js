@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { JWT_PRIVATE_KEY } = require("./config/environment.config");
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const passport = require("passport");
 
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
@@ -28,20 +28,24 @@ const generateToken = (user) => {
 
 // Para estrategias basadas en Headers con JWT
 const authToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
+  // console.log(req.cookies);
+  const authHeader = undefined;
+  if (!req.cookies || !req.cookies.rodsCookie) {
     return res
       .status(401)
       .send({ status: "error", error: "Not authenticated" });
   }
 
+  req.headers.cookie.split('; ');
+
   // token, authorization header: "Bearer token"
-  const token = authHeader.split(" ")[1];
+  const token = req.cookies.rodsCookie;
   jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }
     req.tokenUser = decoded.payload;
+    req.user = decoded.payload;
     next();
   });
 };

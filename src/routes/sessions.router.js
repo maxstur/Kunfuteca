@@ -1,9 +1,9 @@
 const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
-const jwt = require("jsonwebtoken");
 const { generateToken, createdHash } = require("../utils");
-const { JWT_PRIVATE_KEY } = require("../config/environment.config");
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;                  
+const SessionController = require("../controllers/sessions.controller");
 
 const sessionsRouter = Router();
 
@@ -12,22 +12,10 @@ sessionsRouter.post(
   passport.authenticate("register", {
     session: false,
     failureRedirect: "/api/sessions/registerFail",
-    passReqToCallback: true,
   }),
-  (req, res) => {
-    res.send({
-      status: "success",
-      message: "User registered successfully",
-    });
-  }
-);
+  SessionController.registerUser);
 
-sessionsRouter.get("/registerFail", (req, res) => {
-  res.status(400).send({
-    status: "error",
-    error: "There was an error registering the user",
-  });
-});
+sessionsRouter.get("/registerFail", SessionController.getRegisterError);
 
 sessionsRouter.post(
   "/login",
@@ -107,7 +95,7 @@ sessionsRouter.get(
 
 sessionsRouter.get(
   "/current",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", JWT_PRIVATE_KEY, { session: false }),
   (req, res) => {
     try {
       const user = req.user;

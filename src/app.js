@@ -30,7 +30,7 @@ const productsRouter = require("./routes/products.router");
 const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
-//const CustomRouter = require("./routes/custom.router");
+const CustomRouter = require("./routes/custom.router");
 const userRouter = require("./routes/user.router");
 
 const ProductManager = require("./dao/dbManagers/ProductManager");
@@ -109,6 +109,7 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
+app.use("/api/custom", CustomRouter);
 const UserRouter = new userRouter();
 app.use("/api/users", UserRouter.getRouter());
 app.use("/", viewsRouter);

@@ -1,6 +1,4 @@
 const { Router } = require("express");
-const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const jwt = require("jsonwebtoken");
 const { authToken } = require("../utils");
 
 class CustomRouter {

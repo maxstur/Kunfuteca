@@ -94,8 +94,8 @@ class ViewsController {
 
   static async getCurrent(req, res) {
     if (req.user) {
-      const user = await userModel.findOne({ _id: req.user._id });
-      res.render("current", { user });
+      const user = await userModel.findOne({ _id: req.user._id }).lean();
+      res.render("current", user );
     } else {
       res.send({ status: "error", error: "User not authenticated" });
     }
