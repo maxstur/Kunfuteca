@@ -1,5 +1,4 @@
 const { Router } = require("express");
-const { authToken } = require("../utils");
 
 class CustomRouter {
   constructor() {
@@ -35,6 +34,40 @@ class CustomRouter {
     };
     next();
   }
+
+  handlePolicies(policies) {
+    //Por ej: [ADMIN], [USER], [PUBLIC]...
+    return (req, res, next) => {
+      const user = req.user;
+
+      if (!user) {
+        return res
+          .status(401)
+          .json({ status: "error", error: "Forbidden, not authenticated" });
+      }
+
+      // Check if the user's role is in the allowed policies
+      const userRole = user.role.toUpperCase();
+      if (
+        !policies.includes(userRole) &&
+        !policies.includes("PREMIUM") &&
+        !policies.includes("ADMIN") &&
+        !policies.includes("USER")
+      ) {
+        return res
+          .status(403)
+          .send({ status: "error", error: "Forbidden, not authorized" });
+      }
+
+      if (policies.includes("PUBLIC") && policies.length == 1) {
+        return next();
+      }
+
+      req.user = user;
+      next();
+    };
+  }
+
   get(path, policies, ...callbacks) {
     this.router.get(
       path,
@@ -69,34 +102,6 @@ class CustomRouter {
       this.addCustomResponses,
       this.applyCallbacks(callbacks)
     );
-  }
-
-  handlePolicies(policies) {
-    //Por ej: [ADMIN], [USER], [PUBLIC]...
-    return (req, res, next) => {
-      const user = req.user;
-
-      if (!user) {
-        return res
-          .status(401)
-          .json({ status: "error", error: "Forbidden, not authenticated" });
-      }
-
-      // Check if the user's role is in the allowed policies
-      const userRole = user.role.toUpperCase();
-      if (!policies.includes(userRole) && !policies.includes("PREMIUM", "ADMIN", "USER")) {
-        return res
-          .status(403)
-          .send({ status: "error", error: "Forbidden, not authorized" });
-      }
-
-      if (policies.includes("PUBLIC") && policies.length == 1) {
-        return next();
-      }
-
-      req.user = user;
-      next();
-    };
   }
 }
 

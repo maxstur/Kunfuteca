@@ -6,7 +6,15 @@ const userModel = require("../dao/models/users");
 const { createdHash, isValidPassword } = require("../utils");
 
 /** Configs */
-const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
+const {
+  JWT_PRIVATE_KEY,
+  EMAIL_ADMIN_1,
+  PASSWORD_ADMIN_1,
+  EMAIL_ADMIN_2,
+  PASSWORD_ADMIN_2,
+  EMAIL_ADMIN_3,
+  PASSWORD_ADMIN_3,
+} = require("../config/environment.config");
 
 function cookieExtractor(req) {
   let token = null;

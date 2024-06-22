@@ -8,7 +8,7 @@ registerForm.addEventListener("submit", (event) => {
 
   data.forEach((value, key) => (payload[key] = value));
 
-  console.log('Payload:', payload);
+  console.log("payload", payload);
 
   fetch("/api/sessions/register", {
     method: "POST",

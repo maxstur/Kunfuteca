@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
+
 class SessionsController {
     static async registerUser(req, res) {
         res.send({

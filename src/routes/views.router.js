@@ -1,42 +1,51 @@
 const { Router } = require("express");
 const { authToken } = require("../utils");
+const CustomRouter = require("./custom.router");
 // const { publicAccess } = require("../middlewares/prublicAccess.middleware");
 // const { privateAccess } = require("../middlewares/privateAccess.middleware");
 const ViewsController = require("../controllers/views.controller");
 
-const viewsRouter = Router();
+class ViewsRouter extends CustomRouter {
+  initialize() {
+    /** ["PUBLIC"]  Public Routes*/
+    this.get("/", ["PUBLIC"], ViewsController.getProductsHome);
+    this.get(
+      "/realtimeproducts",
+      ["PUBLIC"],
+      ViewsController.getRealTimeProducts
+    );
+    this.get("/chat", ["PUBLIC"], ViewsController.getChat);
+    this.get("/calcNoBlocking", ["PUBLIC"], ViewsController.getCalcNoBlocking);
+    this.get("/soldProducts", ["PUBLIC"], ViewsController.getSoldProducts);
+    this.get("/register", ["PUBLIC"], ViewsController.getRegister);
+    this.get("/login", ["PUBLIC"], ViewsController.getLogin);
 
-/** views */
-viewsRouter.get("/", ViewsController.getProductsHome);
-viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts);
-viewsRouter.get("/chat", ViewsController.getChat);
+    /** products with token */
+    this.get("/products", ["ADMIN", "USER"], ViewsController.getProducts);
+    this.get(
+      "/products.alt",
+      ["ADMIN", "USER"],
+      ViewsController.getProductsAlternative
+    );
+    this.get("/products/:pid", ["ADMIN", "USER"], ViewsController.getProduct);
 
-/** products with token */
-viewsRouter.get("/products", authToken, ViewsController.getProducts);
-viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
-viewsRouter.get("/products/:pid", ViewsController.getProduct);
+    /** Carts with token */
+    this.get("/carts/:cid", ["ADMIN", "USER"], ViewsController.getCart);
+    this.get(
+      "/carts/:cid/products",
+      ["ADMIN", "USER"],
+      ViewsController.getCartProducts
+    );
 
-/** Cart products with token*/
-viewsRouter.get("/carts/:cid", ViewsController.getCart);
-viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
+    /** Current user ["PRIVATE"] */
+    this.get("/current", ["PRIVATE"], ViewsController.getCurrent);
+    this.get(
+      "/resetPassword/:token",
+      ["USER, ADMIN, PREMIUM"],
+      ViewsController.getResetPassword
+    );
+    this.get("/logout", ["USER, ADMIN", "PREMIUM"], ViewsController.getLogout);
+  }
+}
 
-/** Register ["PUBLIC"],*/
-viewsRouter.get("/register", ViewsController.getRegister);
-/** Login ["PUBLIC"],*/
-viewsRouter.get("/login", ViewsController.getLogin);
-/** Current user ["PRIVATE"] */
-viewsRouter.get("/current", authToken, ViewsController.getCurrent);
-/**["PUBLIC"], */
-viewsRouter.get(
-  "/resetPassword/:token",
-  authToken,
-  ViewsController.getResetPassword
-);
-/** Logout ["PRIVATE"] */
-viewsRouter.get("/logout", authToken, ViewsController.getLogout);
-
-//Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
-viewsRouter.get("/calcNoBlocking", ViewsController.getCalcNoBlocking);
-viewsRouter.get("/soldProducts", ViewsController.getSoldProducts);
-
-module.exports = viewsRouter;
+module.exports = ViewsRouter;

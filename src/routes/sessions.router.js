@@ -2,7 +2,7 @@ const { Router } = require("express");
 const passport = require("passport");
 const userModel = require("../dao/models/users");
 const { generateToken, createdHash } = require("../utils");
-const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;                  
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const SessionController = require("../controllers/sessions.controller");
 
 const sessionsRouter = Router();
@@ -13,7 +13,8 @@ sessionsRouter.post(
     session: false,
     failureRedirect: "/api/sessions/registerFail",
   }),
-  SessionController.registerUser);
+  SessionController.registerUser
+);
 
 sessionsRouter.get("/registerFail", SessionController.getRegisterError);
 

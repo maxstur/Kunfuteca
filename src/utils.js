@@ -64,37 +64,37 @@ const getToken = (req, res, next) => {
   });
 };
 
-const callPassport = (strategy) => {
-  return (req, res, next) => {
-    passport.authenticate(strategy, (err, user, info) => {
-      if (err) {
-        return res.status(500).send({ status: "error", error: err.message });
-      }
-      if (!user) {
-        return res.status(401).send({
-          status: "error",
-          error: info.message ? info.message : info.toString(),
-        });
-      }
-      req.user = user;
-      next();
-    })(req, res, next);
-  };
-};
+// const callPassport = (strategy) => {
+//   return (req, res, next) => {
+//     passport.authenticate(strategy, { session: false }, async (err, user, info) => {
+//       if (err) {
+//         return res.status(500).send({ status: "error", error: err.message });
+//       }
+//       if (!user) {
+//         return res.status(401).send({
+//           status: "error",
+//           error: info.message ? info.message : info.toString(),
+//         });
+//       }
+//       req.user = user;
+//       next();
+//     })(req, res, next);
+//   };
+// };
 
-const checkRoleAuthorization = (...targettedRoles) => {
-  return (req, res, next) => {
-    if (
-      !req.user ||
-      !req.user.role ||
-      !req.user.admin ||
-      !targettedRoles.includes(req.user.role)
-    ) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    next();
-  };
-};
+// const checkRoleAuthorization = (...targettedRoles) => {
+//   return (req, res, next) => {
+//     if (
+//       !req.user ||
+//       !req.user.role ||
+//       !req.user.admin ||
+//       !targettedRoles.includes(req.user.role)
+//     ) {
+//       return res.status(403).send({ status: "error", error: "Not authorized" });
+//     }
+//     next();
+//   };
+// };
 
 function soldProducts() {
   // llamada operaciónCompleja

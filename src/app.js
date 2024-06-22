@@ -19,11 +19,9 @@ const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
 
 /** Configs */
-const PORT = process.env.PORT;
-const ENVIRONMENT = process.env.ENVIRONMENT;
-const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
-const MONGO_CONNECTOR_LINK = process.env.MONGO_CONNECTOR_LINK;
-const SESSION_SECRET = process.env.SESSION_SECRET;
+const PORT = require("./config/environment.config").PORT;
+const ENVIRONMENT = require("./config/environment.config").ENVIRONMENT;
+const MONGO_CONNECTOR_LINK = require("./config/environment.config").MONGO_CONNECTOR_LINK;
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
@@ -112,4 +110,4 @@ app.use("/api/sessions", sessionsRouter);
 app.use("/api/custom", CustomRouter);
 const UserRouter = new userRouter();
 app.use("/api/users", UserRouter.getRouter());
-app.use("/", viewsRouter);
+app.use("/", viewsRouter.getRouter());
