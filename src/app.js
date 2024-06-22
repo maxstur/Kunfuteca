@@ -110,4 +110,4 @@ app.use("/api/sessions", sessionsRouter);
 app.use("/api/custom", CustomRouter);
 const UserRouter = new userRouter();
 app.use("/api/users", UserRouter.getRouter());
-app.use("/", viewsRouter.getRouter());
+app.use("/", viewsRouter);

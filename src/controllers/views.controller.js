@@ -5,6 +5,9 @@ const { soldProducts } = require("../utils");
 const CartsManager = require("../dao/dbManagers/CartsManager");
 const userModel = require("../dao/models/users");
 const cartsManager = new CartsManager();
+const CustomRouter = require("./custom.router");
+
+const customRouter = new CustomRouter();
 
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 let visitorsCounter = 0;
@@ -19,7 +22,7 @@ class ViewsController {
       const products = await productManager.getProducts();
       res.render("realTimeProducts", { products });
     } catch (error) {
-      res.status(500).send({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Error al obtener los productos" });
     }
   }
 
@@ -28,7 +31,7 @@ class ViewsController {
       const products = await productManager.getProducts();
       res.render("realTimeProducts", { products });
     } catch (error) {
-      res.status(500).send({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Error al obtener los productos" });
     }
   }
 
@@ -43,7 +46,7 @@ class ViewsController {
 
       res.render("products", { products: docs, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.sendServerError({ error: "Error al obtener los productos" });
     }
   }
 
@@ -52,7 +55,7 @@ class ViewsController {
       const { docs, ...rest } = await productManager.getProducts(req.query);
       res.render("products_alternative", { products: docs, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.sendServerError({  error: "Error al obtener los productos alternativos" });
     }
   }
 
@@ -61,7 +64,7 @@ class ViewsController {
       const product = await productManager.getProduct(req.params.pid);
       res.render("product", { product: product });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.sendServerError({  error: "Error al obtener el producto por id" });
     }
   }
 
@@ -70,7 +73,7 @@ class ViewsController {
       const cart = await cartsManager.getCart(req.params.cid); // O quizás: productManager
       res.render("cart", cart);
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.sendServerError({ error: "Error al obtener el carrito por id" });
     }
   }
 
@@ -79,7 +82,7 @@ class ViewsController {
       const { docs, ...rest } = await productManager.getProducts();
       res.render("cartProducts", { products: docs, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.sendServerError({ error: "Error al obtener los productos del carrito" });
     }
   }
 
@@ -94,27 +97,33 @@ class ViewsController {
 
   static async getCurrent(req, res) {
     if (req.user) {
+      try {
       const user = await userModel.findOne({ _id: req.user._id }).lean();
-      res.render("current", user );
+      res.render("current", user);
+    } catch (error) {
+      res.sendServerError({ error: "Error al obtener el usuario actual" });
+      }
     } else {
-      res.send({ status: "error", error: "User not authenticated" });
+      res.sendServerError({ error: "User not authenticated" });
     }
   }
 
   static async getResetPassword(req, res) {
+    if (!req.params.token) {
+      return res.sendUserError({ error: "Invalid token" });
+    }
     res.render("resetPassword", { token: req.params.token });
   }
 
   static async getLogout(req, res) {
     req.logout((err) => {
       if (err) {
-        return res.status(500).send({ status: "error", error: err });
+        return res.sendServerError({ error: err });
       }
-
       res.clearCookie("rodsCookie");
       res.redirect("/login");
 
-      res.send({ status: "success", message: "User logged out successfully" });
+      res.sendSuccess({ message: "User logged out successfully" });
     });
   }
 
@@ -125,7 +134,7 @@ class ViewsController {
     child.send("Start calculating");
     child.on("message", (result) => {
       console.log("Listening message from child", result);
-      res.send({ result });
+      res.sendSuccess({ result });
     });
   }
 
@@ -133,7 +142,7 @@ class ViewsController {
     // Llamada Cálculo bloqueante
     // result de  = operacionCompleja; (fork es para crear un proceso secundario)
     const result = soldProducts();
-    res.send({ result });
+    res.sendSuccess({ result });
   }
 }
 

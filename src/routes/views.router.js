@@ -1,8 +1,4 @@
-const { Router } = require("express");
-const { authToken } = require("../utils");
 const CustomRouter = require("./custom.router");
-// const { publicAccess } = require("../middlewares/prublicAccess.middleware");
-// const { privateAccess } = require("../middlewares/privateAccess.middleware");
 const ViewsController = require("../controllers/views.controller");
 
 class ViewsRouter extends CustomRouter {
