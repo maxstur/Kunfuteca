@@ -111,8 +111,8 @@ module.exports = {
   isValidPassword,
   generateToken,
   authToken,
-  callPassport,
-  checkRoleAuthorization,
+  //callPassport,
+  //checkRoleAuthorization,
   soldProducts,
   getToken,
 };
