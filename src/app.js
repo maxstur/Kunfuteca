@@ -21,16 +21,16 @@ const cookieParser = require("cookie-parser");
 /** Configs */
 const PORT = require("./config/environment.config").PORT;
 const ENVIRONMENT = require("./config/environment.config").ENVIRONMENT;
-const MONGO_CONNECTOR_LINK = require("./config/environment.config").MONGO_CONNECTOR_LINK;
+const MONGO_CONNECTOR_LINK =
+  require("./config/environment.config").MONGO_CONNECTOR_LINK;
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
-const viewsRouter = require("./routes/views.router");
+const ViewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
-const CustomRouter = require("./routes/custom.router");
-const userRouter = require("./routes/user.router");
 
+/** Managers */
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
@@ -104,10 +104,8 @@ io.on("connection", async (socket) => {
 });
 
 // Rutas API - app.use
-app.use("/api/products", productsRouter);
+app.use("/api/products", productsRouter.getRouter());
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-app.use("/api/custom", CustomRouter);
-const UserRouter = new userRouter();
-app.use("/api/users", UserRouter.getRouter());
-app.use("/", viewsRouter);
+const viewsRouter = new ViewsRouter();
+app.use("/", viewsRouter.getRouter());

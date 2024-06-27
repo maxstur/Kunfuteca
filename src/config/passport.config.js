@@ -14,6 +14,7 @@ const {
   PASSWORD_ADMIN_2,
   EMAIL_ADMIN_3,
   PASSWORD_ADMIN_3,
+  GITHUB_CLIENT_SECRET,
 } = require("../config/environment.config");
 
 function cookieExtractor(req) {
@@ -139,9 +140,9 @@ const initializePassport = () => {
     "github",
     new GithubStrategy(
       {
-        clientID: "Iv1.99c8943a5483aae9",
+        clientID: "Iv1.2f5a0a5c1e5b1f5",
         callbackURL: "http://localhost:8080/api/sessions/githubcallback",
-        clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
+        clientSecret: GITHUB_CLIENT_SECRET,
         session: false,
       },
       async (accessToken, refreshToken, profile, done) => {
@@ -172,6 +173,7 @@ const initializePassport = () => {
             return done(null, user);
           }
         } catch (error) {
+          console.error("Error during GitHub user authentication:", error);
           return done(error);
         }
       }

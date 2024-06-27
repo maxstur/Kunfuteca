@@ -19,7 +19,8 @@ const isValidPassword = (user, password) => {
 
 // Generamos un token
 const generateToken = (user) => {
-  const { password, ...deletePasswordFromUser } = user;
+  const userObject = user.toObject ? user.toObject() : user;
+  const { password, ...deletePasswordFromUser } = userObject;
   const token = jwt.sign({ payload: deletePasswordFromUser }, JWT_PRIVATE_KEY, {
     expiresIn: "1h",
   });
@@ -27,7 +28,7 @@ const generateToken = (user) => {
 };
 
 // Para estrategias basadas en Headers con JWT
-const authToken = (req, res, next) => {
+const authHeaderToken = (req, res, next) => {
   // console.log(req.cookies);
   const authHeader = undefined;
   if (!req.cookies || !req.cookies.rodsCookie) {
@@ -44,7 +45,6 @@ const authToken = (req, res, next) => {
     if (err) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }
-    req.tokenUser = decoded.payload;
     req.user = decoded.payload;
     next();
   });
@@ -59,7 +59,7 @@ const getToken = (req, res, next) => {
 
   jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
     if (err) res.status(403).send({ status: "error", error: "Not authorized" });
-    req.tokenUser = decoded.payload;
+    req.user = decoded.payload;
     next();
   });
 };
@@ -110,7 +110,7 @@ module.exports = {
   createdHash,
   isValidPassword,
   generateToken,
-  authToken,
+  authHeaderToken,
   //callPassport,
   //checkRoleAuthorization,
   soldProducts,

@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const { authToken } = require("../utils");
+const { JWT_PRIVATE_KEY, EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3 } = require("../config/environment.config");
 
 class CustomRouter {
   constructor() {
@@ -23,15 +25,28 @@ class CustomRouter {
   }
 
   addCustomResponses(req, res, next) {
-    res.sendSuccess = (payload) => {
+    res.sendUserError = (error) => {
+      res.status(400).send({ status: "error", error: error.message });
+    };
+    res.sendUserSuccess = (payload) => {
       res.status(200).send({ status: "success", payload });
     };
     res.sendServerError = (error) => {
       res.status(500).send({ status: "error", error: error.message });
     };
-    res.sendUserError = (error) => {
-      res.status(400).send({ status: "error", error: error.message });
+    res.sendServerSuccess = (payload) => {
+      res.status(200).send({ status: "success", payload });
+    }
+    res.sendNotFound = (error) => {
+      res.status(404).send({ status: "error", error: error.message });
     };
+    res.sendForbiddenAccess = (error) => {
+      res.status(403).send({ status: "error", error: error.message });
+    };
+    res.sendUserUnauthorized = (error) => {
+      res.status(401).send({ status: "error", error: error.message });
+    };
+
     next();
   }
 
@@ -39,6 +54,10 @@ class CustomRouter {
     //Por ej: [ADMIN], [USER], [PUBLIC]...
     return (req, res, next) => {
       const user = req.user;
+
+      if (policies.includes("PUBLIC") && policies.length == 1) {
+        return next();
+      }
 
       if (!user) {
         return res
@@ -48,19 +67,12 @@ class CustomRouter {
 
       // Check if the user's role is in the allowed policies
       const userRole = user.role.toUpperCase();
-      if (
-        !policies.includes(userRole) &&
-        !policies.includes("PREMIUM") &&
-        !policies.includes("ADMIN") &&
-        !policies.includes("USER")
-      ) {
+
+      // Check if user role is in the allowed policies
+      if (!policies.includes(userRole)) {
         return res
           .status(403)
           .send({ status: "error", error: "Forbidden, not authorized" });
-      }
-
-      if (policies.includes("PUBLIC") && policies.length == 1) {
-        return next();
       }
 
       req.user = user;

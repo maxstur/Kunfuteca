@@ -1,13 +1,17 @@
 const { Router } = require("express");
 const ProductsController = require("../controllers/products.controller");
-const { authToken } = require("../utils");
+const CustomRouter = require("./custom.router");
 
-const productsRouter = Router();
+const router = Router();
 
-productsRouter.get("/products-all", ProductsController.getAll);
-productsRouter.get("/:id", ProductsController.getById);
-productsRouter.post("/", ProductsController.create);
-productsRouter.put("/:pid", ProductsController.update);
-productsRouter.delete("/:id", ProductsController.delete);
+class ProductsRouter extends CustomRouter {
+  initialize() {
+    this.get("/", ["PUBLIC"], ProductsController.getAll);
+    this.get("/:id", ["PUBLIC"], ProductsController.getById);
+    this.post("/", ["ADMIN", "USER"], ProductsController.create);
+    this.put("/:pid", ["ADMIN", "USER"], ProductsController.update);
+    this.delete("/:id", ["ADMIN", "USER"], ProductsController.delete);
+  }
+}
 
-module.exports = productsRouter;
+module.exports = new ProductsRouter();

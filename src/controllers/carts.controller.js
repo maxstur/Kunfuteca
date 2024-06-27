@@ -5,6 +5,10 @@ const productManager = new ProductManager(
   __dirname + "/../files/products.json"
 );
 
+// El cartService es mi acceso a la capa de persistencia
+// El cartController es mi acceso a la capa de logica de negocios
+// El cartController solo interactua con el cartService
+
 class CartsController {
   static async create(req, res) {
     //api/carts
@@ -27,7 +31,7 @@ class CartsController {
     } catch (error) {
       return res
         .status(500)
-        .send({ status: "error", error: "Error al obtener carrito" });
+        .send({ status: "error", error: "The cart does not exist" });
     }
   }
 
@@ -38,7 +42,7 @@ class CartsController {
 
     try {
       const cart = await cartsManager.getCart(id); // Obtener el cart del cartService
-      const product = await productManager.getProduct(productId); // Obtener el cart del productService
+      const product = await productManager.getProduct(productId); // Obtener el cart del productsService
 
       if (!cart) {
         res.status(400).send({ message: "El carrito no existe" });
@@ -47,11 +51,9 @@ class CartsController {
         res.status(400).send({ message: "El producto no existe" });
       }
 
-      // cartsManager.addProduct(id, productId);
       // const cart = await this.getCart(id);
 
-      const index = cart.products.findIndex((p) => p.product == productId);
-
+      const index = cart.products.findIndex(p => p.product._id == productId);
       if (index >= 0) {
         cart.products[index].quantity += 1;
       } else {
@@ -59,7 +61,6 @@ class CartsController {
       }
 
       await cartModel.updateOne({ _id: id }, cart); //<-- Actualizar el carrito usando cartService
-
     } catch (error) {
       return res.status(500).send({ status: "error", error: error.message });
     }

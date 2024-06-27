@@ -4,6 +4,7 @@ const userModel = require("../dao/models/users");
 const { generateToken, createdHash } = require("../utils");
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const SessionController = require("../controllers/sessions.controller");
+const CustomRouter = require("./custom.router");
 
 const sessionsRouter = Router();
 
@@ -72,7 +73,8 @@ sessionsRouter.get(
     session: false,
   }),
   async (req, res) => {
-    const { _id, first_name, last_name, email, age, role, cart } = req.user;
+    const { _id, first_name, last_name, email, age } = req.user;
+    let { role, cart } = req.user;
 
     const serializableUser = {
       _id: _id,
@@ -96,7 +98,7 @@ sessionsRouter.get(
 
 sessionsRouter.get(
   "/current",
-  passport.authenticate("jwt", JWT_PRIVATE_KEY, { session: false }),
+  passport.authenticate("jwt", { session: false }),
   (req, res) => {
     try {
       const user = req.user;

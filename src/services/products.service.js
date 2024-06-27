@@ -1,4 +1,4 @@
-//<---persistencia con Mongoose--->
+//<---Instanciando un DAO de Mongo. persistencia con Mongoose--->
 const ProductsDao = require("../dao/products.dao");
 
 class ProductsService {
@@ -33,7 +33,7 @@ class ProductsService {
         throw { message: "Page does not exist", status: 400 };
       }
     } else {
-      result = await this.dao.getAll().lean();
+      result = await this.dao.getAll()
     }
 
     let extraLinkParams = "";
