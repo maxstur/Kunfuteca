@@ -1,4 +1,4 @@
-const productModel = require("./models/product.js");
+const productModel = require("../models/product.js");
 
 /** El DAO sólo se encarga de la persistencia (Mongoose), no de la lógica. */
 /** O sea el DAO no interactua con la base de datos */
@@ -13,7 +13,7 @@ class ProductsDao {
   }
 
   async getById(id) {
-    return await productModel.findOne({ _id: id });//.lean();
+    return await productModel.findOne({ _id: id });
   }
 
   async create(product) {

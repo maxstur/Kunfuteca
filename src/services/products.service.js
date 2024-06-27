@@ -1,5 +1,5 @@
 //<---Instanciando un DAO de Mongo. persistencia con Mongoose--->
-const ProductsDao = require("../dao/products.dao");
+const ProductsDao = require("../dao/dbManagers/products.dao");
 
 class ProductsService {
   constructor() {
@@ -8,7 +8,7 @@ class ProductsService {
 
   async getAll(queryParams = null) {
     let result = [];
-    let opt = {}; 
+    let opt = {};
     if (queryParams) {
       let paginationOpt = {
         page: queryParams.page || 1,
@@ -33,7 +33,7 @@ class ProductsService {
         throw { message: "Page does not exist", status: 400 };
       }
     } else {
-      result = await this.dao.getAll()
+      result = await this.dao.getAll();
     }
 
     let extraLinkParams = "";
@@ -57,27 +57,22 @@ class ProductsService {
 
   async getById(id) {
     const product = await this.dao.getById(id);
-    if (!product) throw { message: `The product ${id} does not exist`, status: 400 };
+    if (!product)
+      throw { message: `The product ${id} does not exist`, status: 400 };
     return product;
   }
 
-  async create( product ) {
-    return await this.dao.create( product );
+  async create(product) {
+    return await this.dao.create(product);
   }
 
   async update(id, product) {
-    const foundProduct = await this.dao.getById(id);
-
-    if (!foundProduct) {
-      throw { message: `The product ${id} does not exist`, status: 400 };
-    }
+    await this.dao.getById(id);
     return await this.dao.update(id, product);
   }
 
   async delete(id) {
-    const product = await this.dao.getById(id);
-    if (!product) throw { message: `The product ${id} can't be deleted, it does not exist`, status: 400 };
-
+    await this.dao.getById(id);
     return await this.dao.delete(id);
   }
 

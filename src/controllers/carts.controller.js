@@ -1,9 +1,6 @@
-const CartsManager = require("../dao/dbManagers/CartsManager");
-const ProductManager = require("../dao/dbManagers/ProductManager");
-const cartsManager = new CartsManager(__dirname + "/../files/carts.json");
-const productManager = new ProductManager(
-  __dirname + "/../files/products.json"
-);
+const CartService = require("../services/carts.service");
+
+const cartsService = new CartService();
 
 // El cartService es mi acceso a la capa de persistencia
 // El cartController es mi acceso a la capa de logica de negocios
@@ -11,114 +8,96 @@ const productManager = new ProductManager(
 
 class CartsController {
   static async create(req, res) {
-    //api/carts
     try {
-      await cartsManager.addCart();
-      res.send({ status: "Carrito creado exitosamente" });
+      await cartsService.create();
+      res.send({ status: "Success" });
     } catch (error) {
-      res
-        .status(500)
-        .send({ status: "error", error: "Error al crear carrito" });
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
-  static async getCartById(req, res) {
-    //api/carts/:id
+  static async getById(req, res) {
     const id = req.params.id;
     try {
-      const cart = await cartsManager.getCartById(id);
+      const cart = await cartsService.getById(id);
       res.send({ status: "success", products: cart.products });
     } catch (error) {
       return res
-        .status(500)
-        .send({ status: "error", error: "The cart does not exist" });
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
   static async addProduct(req, res) {
-    //Traer logica de CartManager "addProduct". De acá en adelante no es api rest
     const id = req.params.id;
     const productId = req.params.pid;
 
     try {
-      const cart = await cartsManager.getCart(id); // Obtener el cart del cartService
-      const product = await productManager.getProduct(productId); // Obtener el cart del productsService
-
-      if (!cart) {
-        res.status(400).send({ message: "El carrito no existe" });
-      }
-      if (!product) {
-        res.status(400).send({ message: "El producto no existe" });
-      }
-
-      // const cart = await this.getCart(id);
-
-      const index = cart.products.findIndex(p => p.product._id == productId);
-      if (index >= 0) {
-        cart.products[index].quantity += 1;
-      } else {
-        cart.products.push({ product: productId, quantity: 1 });
-      }
-
-      await cartModel.updateOne({ _id: id }, cart); //<-- Actualizar el carrito usando cartService
+      const result = await cartsManager.addProduct(id, productId);
+      res.send({ status: "success", payload: result });
     } catch (error) {
-      return res.status(500).send({ status: "error", error: error.message });
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
 
-    res.send({ status: "Producto agregado exitosamente al carrito" });
+    res.send({ status: "Product successfully added" });
   }
 
   static async deleteProduct(req, res) {
-    //Traer logica de CartManager.
     const { cid, pid } = req.params;
     try {
-      const result = await cartsManager.deleteProductById(cid, pid);
+      const result = await cartsService.deleteProductById(cid, pid);
       res.send({ status: "success", payload: result });
     } catch (error) {
-      return res.status(500).send({
+      return res.status(error.status || 500).send({
         status: "error",
-        error: "Error al eliminar un producto del carrito",
+        error: error.message,
       });
     }
   }
 
   static async updateProductQuantity(req, res) {
-    //Traer logica de CartManager "addProduct"
     const { id, pid } = req.params;
     const quantity = req.body.quantity;
 
     try {
-      const result = await cartsManager.updateProductQuantity(
+      const result = await cartsService.updateProductQuantity(
         id,
         pid,
         quantity
       );
       res.send(result);
     } catch (error) {
-      return res.status(500).send({ status: "error", error: error.message });
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
   static async updateCartProducts(req, res) {
-    //Traer logica de CartManager
     const { id } = req.params;
-    const products = req.body;
     try {
-      const result = await cartsManager.updateCartProducts(id, products);
+      const result = await cartsService.updateCartProducts(id, req.body);
       res.send(result);
     } catch (error) {
-      return res.status(500).send({ status: "error", error: error.message });
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
   static async cleanCart(req, res) {
-    //Traer logica de CartManager
-    const id = req.params.id;
+    const { id } = req.params;
     try {
-      const result = await cartsManager.cleanCart(id);
+      const result = await cartsService.cleanCart(id);
       res.send(result);
     } catch (error) {
-      return res.status(500).send({ status: "error", error: error.message });
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 }

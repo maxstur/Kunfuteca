@@ -19,6 +19,7 @@ class ViewsRouter extends CustomRouter {
     this.get("/soldProducts", ["PUBLIC"], ViewsController.getSoldProducts);
     this.get("/register", ["PUBLIC"], ViewsController.getRegister);
     this.get("/login", ["PUBLIC"], ViewsController.getLogin);
+    this.get("*", ["PUBLIC"], ViewsController.get404);
 
     /** products with token */
     this.get(
@@ -36,14 +37,14 @@ class ViewsRouter extends CustomRouter {
     this.get(
       "/products/:pid",
       passport.authenticate("jwt"), ["ADMIN", "USER"],
-      ViewsController.getProduct
+      ViewsController.getProductById
     );
 
     /** Carts with token */
     this.get(
       "/carts/:cid",
       passport.authenticate("jwt"), ["ADMIN", "USER"],
-      ViewsController.getCart
+      ViewsController.getCartById
     );
     this.get(
       "/carts/:cid/products",
@@ -67,6 +68,7 @@ class ViewsRouter extends CustomRouter {
       passport.authenticate("jwt"), ["ADMIN", "USER"],
       ViewsController.getLogout
     );
+
   }
 
   /** De ex USER ROUTER */

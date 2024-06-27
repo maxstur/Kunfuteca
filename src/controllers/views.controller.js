@@ -1,77 +1,86 @@
-const ProductManager = require("../dao/dbManagers/ProductManager");
-const productManager = new ProductManager();
 const { fork } = require("child_process");
 const { soldProducts } = require("../utils");
-const CartsManager = require("../dao/dbManagers/CartsManager");
-const userModel = require("../dao/models/users");
-const cartsManager = new CartsManager();
 
+const ProductsService = require("../services/products.service");
+const CartsService = require("../services/carts.service");
+
+const productsService = new ProductsService();
+const cartsService = new CartsService();
 
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 let visitorsCounter = 0;
 
 class ViewsController {
   static async getProductsHome(req, res) {
+    visitorsCounter++;
+    console.log(
+      `Hello visitors, this web has been visited: ${visitorsCounter}`
+    );
     try {
-      visitorsCounter++;
-      console.log(
-        `Hello visitors, this web has been visited: ${visitorsCounter}`
-      );
-      const products = await productManager.getProducts();
-      res.render("realTimeProducts", { products });
+      const products = await productsService.getAll();
+      res.render("home", { products });
     } catch (error) {
-      res.sendServerError({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Home products don't exist" });
     }
   }
 
   static async getRealTimeProducts(req, res) {
     try {
-      const products = await productManager.getProducts();
+      const products = await productsService.getAll();
       res.render("realTimeProducts", { products });
     } catch (error) {
-      res.sendServerError({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Live products don't exist" });
     }
   }
 
   static async getChat(req, res) {
-    res.render("chat", {});
+    try {
+      res.render("chat", {});
+    } catch (error) {
+      res.sendServerError({ error: "Chat doesn't exist" });
+    }
   }
 
-  /** Products with Token user: req.TokenUser, ["PUBLIC"],*/
   static async getProducts(req, res) {
     try {
-      const { docs, ...rest } = await productManager.getProducts(req.query);
-
-      res.render("products", { products: docs, user: req.TokenUser, ...rest });
+      const { docs, ...rest } = await productsService.getProducts(req.query);
+      res.render("products", {
+        products: docs,
+        style: "products.css",
+        user: req.TokenUser,
+        ...rest,
+      });
     } catch (error) {
-      res.sendServerError({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: error.message });
     }
   }
 
   static async getProductsAlternative(req, res) {
     try {
-      const { docs, ...rest } = await productManager.getProducts(req.query);
+      const { docs, ...rest } = await productsService.getAll(req.query);
       res.render("products_alternative", { products: docs, ...rest });
     } catch (error) {
-      res.sendServerError({  error: "Error al obtener los productos alternativos" });
+      res.sendServerError({
+        error: "Error al obtener los productos alternativos",
+      });
     }
   }
 
-  static async getProduct(req, res) {
+  static async getProductById(req, res) {
     try {
-      const product = await productManager.getProduct(req.params.pid);
+      const product = await productsService.getAll(req.params.pid);
       res.render("product", { product: product });
     } catch (error) {
-      res.sendServerError({  error: "Error al obtener el producto por id" });
+      res.sendServerError({ error: "Product by id doesn't exist" });
     }
   }
 
-  static async getCart(req, res) {
+  static async getCartById(req, res) {
     try {
-      const cart = await cartsManager.getCart(req.params.cid); // O quizás: productManager
-      res.render("cart", cart);
+      const cart = await cartsService.getById(req.params.cid); // O quizás: productManager
+      res.render("cart", { ...cart, style: "products.css" });
     } catch (error) {
-      res.sendServerError({ error: "Error al obtener el carrito por id" });
+      res.sendServerError({ error: "Cart by id doesn't exist" });
     }
   }
 
@@ -80,26 +89,36 @@ class ViewsController {
       const { docs, ...rest } = await productManager.getProducts();
       res.render("cartProducts", { products: docs, ...rest });
     } catch (error) {
-      res.sendServerError({ error: "Error al obtener los productos del carrito" });
+      res.sendServerError({
+        error: "There was an error in the cart products route",
+      });
     }
   }
 
   /** Register - Login - Current - Logout - More */
   static async getRegister(req, res) {
-    res.render("register", {});
+    try {
+      res.render("register", {});
+    } catch (error) {
+      res.sendServerError({ error: error.message });
+    }
   }
 
   static async getLogin(req, res) {
-    res.render("login", {});
+    try {
+      res.render("login", {});
+    } catch (error) {
+      res.sendServerError({ error: error.message });
+    }
   }
 
   static async getCurrent(req, res) {
     if (req.user) {
       try {
-      const user = await userModel.findOne({ _id: req.user._id }).lean();
-      res.render("current", user);
-    } catch (error) {
-      res.sendUserError({ error: "Error al obtener el usuario actual" });
+        const user = await userModel.findOne({ _id: req.user._id }).lean();
+        res.render("current", user);
+      } catch (error) {
+        res.sendUserError({ error: "There was a problem getting the user" });
       }
     } else {
       res.sendUserError({ error: "User not authenticated" });
@@ -118,7 +137,8 @@ class ViewsController {
       if (err) {
         return res.sendServerError({ error: "Failed to log out" });
       }
-      res.clearCookie("rodsCookie");start
+      res.clearCookie("rodsCookie");
+      start;
       res.redirect("/login");
 
       res.sendUserSuccess({ message: "User logged out successfully" });
@@ -141,6 +161,12 @@ class ViewsController {
     // result de  = operacionCompleja; (fork es para crear un proceso secundario)
     const result = soldProducts();
     res.sendServerSuccess({ result });
+  }
+  static get404(req, res) {
+    res.send({
+      status: "error",
+      message: `404 content not found, there is no route specified for ${req.path}`,
+    });
   }
 }
 

@@ -16,14 +16,16 @@
 {{/if}}
 {{#each products}}
   <div>
-    <h2>{{this.description}}</h2>
-    <p>Título: {{this.title}}</p>
-    <p>Precio: {{this.price}}</p>
-    <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
+    <h3>{{this.description}}</h3>
+    <small>{{this._id}}</small>
+    <p>category: {{this.category}}</p>
+    <p>price: {{this.price}}</p>
+    <button>Add to cart</button>
   </div>
   <br /><br />
 {{/each}}
-<div>
+
+<div class="btnProductsPages">
   {{#if hasPrevPage}}
     <a href="{{prevLink}}"><button>Prev</button></a>
   {{else}}

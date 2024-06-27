@@ -45,6 +45,7 @@ const authHeaderToken = (req, res, next) => {
     if (err) {
       return res.status(403).send({ status: "error", error: "Not authorized" });
     }
+    req.tokenUser = decoded.payload;
     req.user = decoded.payload;
     next();
   });
@@ -58,7 +59,8 @@ const getToken = (req, res, next) => {
   }
 
   jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
-    if (err) res.status(403).send({ status: "error", error: "Not authorized" });
+    if (err) return res.status(403).send({ status: "error", error: "Not authorized" });
+    req.tokenUser = decoded.payload;
     req.user = decoded.payload;
     next();
   });

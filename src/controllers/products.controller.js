@@ -10,7 +10,9 @@ class ProductsController {
       const { docs, ...rest } = await productsService.getAll(query);
       res.send({ status: "success", payload: { docs, ...rest } });
     } catch (error) {
-      res.status(500).send({ status: "error", error: error.message });
+      res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
@@ -18,12 +20,17 @@ class ProductsController {
     try {
       let product = await productsService.getById(req.params.id);
 
-      if (!product) throw { message: `The product ${req.params.id} does not exist`, status: 400 };
+      if (!product)
+        throw {
+          message: `The product ${req.params.id} does not exist`,
+          status: 400,
+        };
       product = product.toObject();
       res.send({ product });
-
     } catch (error) {
-      res.status(500).send({ status: "error", error: error.message });
+      res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 
@@ -36,7 +43,7 @@ class ProductsController {
       req.io.emit("Lista actualizada", { products });
       res.send({ status: "success", details: products });
     } catch (error) {
-      res.status(500).send({ error: "Error al agregar nuevo elemento" });
+      res.status(error.status || 500).send({ error: error.message });
     }
   }
 
@@ -55,7 +62,7 @@ class ProductsController {
       console.log("error", error);
       res
         .status(error.status || 500)
-        .send({ status: "error", error: "Error al actualizar el producto" });
+        .send({ status: "error", error: error.message });
     }
   }
 
@@ -66,8 +73,8 @@ class ProductsController {
       res.send({ status: "success", details: result });
     } catch (error) {
       res
-        .status(500)
-        .send({ status: "error", error: "Error al eliminar producto" });
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
     }
   }
 }
