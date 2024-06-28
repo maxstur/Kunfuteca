@@ -1,7 +1,7 @@
 const passport = require("passport");
 const local = require("passport-local");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
-const GithubStrategy = require("passport-github2");
+const github = require("passport-github2");
 const userModel = require("../dao/models/users");
 const { createdHash, isValidPassword } = require("../utils");
 
@@ -14,7 +14,6 @@ const {
   PASSWORD_ADMIN_2,
   EMAIL_ADMIN_3,
   PASSWORD_ADMIN_3,
-  GITHUB_CLIENT_SECRET,
 } = require("../config/environment.config");
 
 function cookieExtractor(req) {
@@ -62,7 +61,7 @@ const initializePassport = () => {
       async (req, email, password, done) => {
         try {
           const { first_name, last_name, age } = req.body;
-          let { role } = req.body;
+          let role;
 
           // Validamos los campos
           if (!first_name || !last_name || !email || !password || !age)
@@ -138,14 +137,16 @@ const initializePassport = () => {
 
   passport.use(
     "github",
-    new GithubStrategy(
+    new github.Strategy(
       {
         clientID: "Iv1.2f5a0a5c1e5b1f5",
+        clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
         callbackURL: "http://localhost:8080/api/sessions/githubcallback",
-        clientSecret: GITHUB_CLIENT_SECRET,
         session: false,
-      },
+      }, 
       async (accessToken, refreshToken, profile, done) => {
+        console.log(profile._json.email);
+
         try {
           let role = "user";
           if (
@@ -156,7 +157,6 @@ const initializePassport = () => {
             role = "admin";
           }
           const user = await userModel.findOne({ email: profile._json.email });
-
           if (!user) {
             // Crear nuevo usuario
             let newUser = {
@@ -164,10 +164,10 @@ const initializePassport = () => {
               last_name: "",
               age: 21,
               email: profile._json.email,
-              cart: [],
               role,
             };
             let result = await userModel.create(newUser);
+            
             return done(null, result);
           } else {
             return done(null, user);

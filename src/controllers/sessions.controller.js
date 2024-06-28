@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const { generateToken, createdHash } = require("../utils");
+const { generateToken, createdHash, authHeaderToken, getToken } = require("../utils");
 const userModel = require("../dao/models/users");
 
 class SessionsController {
@@ -82,17 +82,17 @@ class SessionsController {
     });
   }
 
-  static async githubLogin(req, res) {
-    try {const { _id, first_name, last_name, email, age, role, cart } = req.user;
+  static async github (req, res) {
+    try {const { _id, first_name, last_name, role, age, email, cart } = req.user;
 
     const serializableUser = {
       _id: _id,
       first_name,
       last_name,
-      email,
       age,
-      role,
+      email,
       cart,
+      role,
     };
     const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
       expiresIn: "1h",
@@ -103,10 +103,10 @@ class SessionsController {
       sameSite: "Strict",
     });
 
-    res.redirect("/products");
+    res.redirect("/");
 
     } catch (error) {
-      res.sendUserError({ error: error.message });
+      res.status(error.status || 500).send({ error: "User already exists" });
     }
   }
 

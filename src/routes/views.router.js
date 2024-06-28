@@ -22,12 +22,7 @@ class ViewsRouter extends CustomRouter {
     this.get("*", ["PUBLIC"], ViewsController.get404);
 
     /** products with token */
-    this.get(
-      "/products",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getProducts
-    );
+    this.get("/products", ["ADMIN", "USER"], ViewsController.getProducts);
     this.get(
       "/products.alt",
       passport.authenticate("jwt"),
@@ -36,39 +31,44 @@ class ViewsRouter extends CustomRouter {
     );
     this.get(
       "/products/:pid",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getProductById
     );
 
     /** Carts with token */
     this.get(
       "/carts/:cid",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getCartById
     );
     this.get(
       "/carts/:cid/products",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getCartProducts
     );
 
     /** Current user ["PRIVATE"] */
     this.get(
       "/current",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getCurrent
     );
     this.get(
       "/resetPassword/:token",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getResetPassword
     );
     this.get(
       "/logout",
-      passport.authenticate("jwt"), ["ADMIN", "USER"],
+      passport.authenticate("jwt"),
+      ["ADMIN", "USER"],
       ViewsController.getLogout
     );
-
   }
 
   /** De ex USER ROUTER */

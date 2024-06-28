@@ -42,7 +42,7 @@ sessionsRouter.get(
     failureRedirect: "/login",
     session: false,
   }),
-  SessionController.githubLogin
+  SessionController.github
 );
 
 sessionsRouter.get("/current", getToken, SessionController.getCurrent);

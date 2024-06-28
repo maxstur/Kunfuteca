@@ -66,23 +66,23 @@ const getToken = (req, res, next) => {
   });
 };
 
-// const callPassport = (strategy) => {
-//   return (req, res, next) => {
-//     passport.authenticate(strategy, { session: false }, async (err, user, info) => {
-//       if (err) {
-//         return res.status(500).send({ status: "error", error: err.message });
-//       }
-//       if (!user) {
-//         return res.status(401).send({
-//           status: "error",
-//           error: info.message ? info.message : info.toString(),
-//         });
-//       }
-//       req.user = user;
-//       next();
-//     })(req, res, next);
-//   };
-// };
+const callPassport = (strategy) => {
+  return (req, res, next) => {
+    passport.authenticate(strategy, { session: false }, async (err, user, info) => {
+      if (err) {
+        return res.status(500).send({ status: "error", error: err.message });
+      }
+      if (!user) {
+        return res.status(401).send({
+          status: "error",
+          error: info.message ? info.message : info.toString(),
+        });
+      }
+      req.user = user;
+      next();
+    })(req, res, next);
+  };
+};
 
 // const checkRoleAuthorization = (...targettedRoles) => {
 //   return (req, res, next) => {
@@ -113,7 +113,7 @@ module.exports = {
   isValidPassword,
   generateToken,
   authHeaderToken,
-  //callPassport,
+  callPassport,
   //checkRoleAuthorization,
   soldProducts,
   getToken,
