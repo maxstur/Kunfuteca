@@ -4,24 +4,19 @@ registerForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const data = new FormData(registerForm);
-  const payload = {};
+  const obj = {};
 
-  data.forEach((value, key) => (payload[key] = value));
+  data.forEach((value, key) => (obj[key] = value));
 
   fetch("/api/sessions/register", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(obj),
     headers: {
       "Content-Type": "application/json",
     },
   })
-    .then((res) => res.json())
-    .then((res) => {
-      if (res.status == "success") {
-        console.log("Register sucessful", res);
-      } else {
-        console.log("Register failed", res);
-      }
-    })
-    .catch((error) => console.log("Error during reistration", error));
+    .then(res => res.json())
+    .then((data) => {
+      console.log(data, "data");
+    });
 });

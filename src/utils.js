@@ -17,13 +17,16 @@ const isValidPassword = (user, password) => {
   return bcrypt.compareSync(password, user.password);
 };
 
-// Generamos un token
-const generateToken = (user) => {
-  const userObject = user.toObject ? user.toObject() : user;
-  const { password, ...deletePasswordFromUser } = userObject;
-  const token = jwt.sign({ payload: deletePasswordFromUser }, JWT_PRIVATE_KEY, {
+// Generate a token
+const generateToken = (userObj) => {
+  const token = jwt.sign(userObj, JWT_PRIVATE_KEY, {
     expiresIn: "1h",
   });
+  
+  if (!token) {
+    throw new Error('Failed to generate token');
+  }
+
   return token;
 };
 
@@ -53,36 +56,40 @@ const authHeaderToken = (req, res, next) => {
 
 // Obtener el token de la cookie y verificarlo. Para estrategias basadas en Cookies
 const getToken = (req, res, next) => {
-  let token = req.cookies.rodsCookie;
+  const token = req.cookies.rodsCookie;
+
   if (!token) {
-    return res.status(403).send({ status: "error", error: "Not authorized" });
+    return res.status(401).send({ status: "error", error: "Not authenticated" });
   }
 
   jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
-    if (err) return res.status(403).send({ status: "error", error: "Not authorized" });
-    req.tokenUser = decoded.payload;
-    req.user = decoded.payload;
+    if (err) {
+      return res.status(403).send({ status: "error", error: "Invalid token" });
+    }
+
+    req.tokenUser = decoded;
+    req.user = decoded;
     next();
   });
 };
 
-const callPassport = (strategy) => {
-  return (req, res, next) => {
-    passport.authenticate(strategy, { session: false }, async (err, user, info) => {
-      if (err) {
-        return res.status(500).send({ status: "error", error: err.message });
-      }
-      if (!user) {
-        return res.status(401).send({
-          status: "error",
-          error: info.message ? info.message : info.toString(),
-        });
-      }
-      req.user = user;
-      next();
-    })(req, res, next);
-  };
-};
+// const callPassport = (strategy) => {
+//   return (req, res, next) => {
+//     passport.authenticate(strategy, { session: false }, async (err, user, info) => {
+//       if (err) {
+//         return res.status(500).send({ status: "error", error: err.message });
+//       }
+//       if (!user) {
+//         return res.status(401).send({
+//           status: "error",
+//           error: info.message ? info.message : info.toString(),
+//         });
+//       }
+//       req.user = user;
+//       next();
+//     })(req, res, next);
+//   };
+// };
 
 // const checkRoleAuthorization = (...targettedRoles) => {
 //   return (req, res, next) => {
@@ -113,7 +120,7 @@ module.exports = {
   isValidPassword,
   generateToken,
   authHeaderToken,
-  callPassport,
+  //callPassport,
   //checkRoleAuthorization,
   soldProducts,
   getToken,

@@ -1,22 +1,11 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const { generateToken, createdHash, authHeaderToken, getToken } = require("../utils");
+const { generateToken, createdHash} = require("../utils");
 const userModel = require("../dao/models/users");
 
 class SessionsController {
   static async registerUser(req, res) {
     try {
-      //const user = req.user;
-
-      // //Token generator
-      // const token = generateToken(user, JWT_PRIVATE_KEY);
-
-      // res.cookie("rodsCookie", token, {
-      //     httpOnly: true,
-      //     secure: true,
-      //     sameSite: "Strict",
-      // });
-
       res.send({
         status: "success",
         message: "User registered successfully",
@@ -35,6 +24,10 @@ class SessionsController {
   }
   static async login(req, res) {
     try {
+      if (!req.user) {
+        throw new Error("User not found");
+      }
+
       const { _id, first_name, last_name, email, age, role, cart } = req.user;
 
       const serializableUser = {
@@ -61,16 +54,21 @@ class SessionsController {
         message: "Logged in successfully",
       });
     } catch (error) {
-      res.sendUserError({ error: error.message });
+      console.error(error);
+      res.sendUserError({ error: "Failed to login" });
     }
   }
 
   static async getLoginError(req, res) {
+    console.log("Inside getLoginError");
+    console.log("Request:", req);
+    console.log("Response:", res);
     res.status(400).send({
       status: "error",
       error: "Invalid credentials",
       alert: "Invalid credentials, please try again",
     });
+    console.log("getLoginError completed");
   }
 
   static async logout(req, res) {
@@ -82,31 +80,34 @@ class SessionsController {
     });
   }
 
-  static async github (req, res) {
-    try {const { _id, first_name, last_name, role, age, email, cart } = req.user;
-
-    const serializableUser = {
-      _id: _id,
-      first_name,
-      last_name,
-      age,
-      email,
-      cart,
-      role,
-    };
-    const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
-      expiresIn: "1h",
-    });
-    res.cookie("rodsCookie", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-    });
-
-    res.redirect("/");
-
+  static async github(req, res) {
+    try {
+      const { _id, first_name, last_name, role, age, email, cart } = req.user;
+      console.log(_id, first_name, last_name, role, age, email, cart);
+      const serializableUser = {
+        id: _id,
+        first_name: first_name || "",
+        last_name: last_name || "",
+        age: age || 0,
+        email: email || "",
+        cart: cart || [],
+        role: role || "user",
+      };
+      console.log(serializableUser, JWT_PRIVATE_KEY);
+      const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
+        expiresIn: "1h",
+      });
+      console.log(token);
+      res.cookie("rodsCookie", token, {
+        httpOnly: true,
+      });
+      console.log("cookie set");
+      res.redirect("/products");
     } catch (error) {
-      res.status(error.status || 500).send({ error: "User already exists" });
+      console.error(error);
+      res
+        .status(error.status || 500)
+        .send({ error: error.message || "Failed to login with GitHub" });
     }
   }
 

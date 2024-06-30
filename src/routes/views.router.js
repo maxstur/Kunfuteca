@@ -1,108 +1,30 @@
 const { Router } = require("express");
-const passport = require("passport");
-const CustomRouter = require("./custom.router");
 const ViewsController = require("../controllers/views.controller");
 
-const router = Router();
+const viewsRouter = Router();
 
-class ViewsRouter extends CustomRouter {
-  initialize() {
-    /** ["PUBLIC"]  Public Routes*/
-    this.get("/", ["PUBLIC"], ViewsController.getProductsHome);
-    this.get(
-      "/realtimeproducts",
-      ["PUBLIC"],
-      ViewsController.getRealTimeProducts
-    );
-    this.get("/chat", ["PUBLIC"], ViewsController.getChat);
-    this.get("/calcNoBlocking", ["PUBLIC"], ViewsController.getCalcNoBlocking);
-    this.get("/soldProducts", ["PUBLIC"], ViewsController.getSoldProducts);
-    this.get("/register", ["PUBLIC"], ViewsController.getRegister);
-    this.get("/login", ["PUBLIC"], ViewsController.getLogin);
-    this.get("*", ["PUBLIC"], ViewsController.get404);
+viewsRouter.get("/", ViewsController.getProductsHome);
+viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts);
+viewsRouter.get("/chat", ViewsController.getChat);
+viewsRouter.get("/calcNoBlocking", ViewsController.getCalcNoBlocking);
+viewsRouter.get("/soldProducts", ViewsController.getSoldProducts);
+viewsRouter.get("/register", ViewsController.getRegister);
+viewsRouter.get("/login", ViewsController.getLogin);
+viewsRouter.get("*", ViewsController.get404);
 
-    /** products with token */
-    this.get("/products", ["ADMIN", "USER"], ViewsController.getProducts);
-    this.get(
-      "/products.alt",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getProductsAlternative
-    );
-    this.get(
-      "/products/:pid",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getProductById
-    );
+/** products with token */
+viewsRouter.get("/products", ViewsController.getProducts);
+viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
+viewsRouter.get("/products/:pid", ViewsController.getProductById);
 
-    /** Carts with token */
-    this.get(
-      "/carts/:cid",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getCartById
-    );
-    this.get(
-      "/carts/:cid/products",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getCartProducts
-    );
+/** Carts with token */
+viewsRouter.get("/carts/:cid", ViewsController.getCartById);
+viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
-    /** Current user ["PRIVATE"] */
-    this.get(
-      "/current",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getCurrent
-    );
-    this.get(
-      "/resetPassword/:token",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getResetPassword
-    );
-    this.get(
-      "/logout",
-      passport.authenticate("jwt"),
-      ["ADMIN", "USER"],
-      ViewsController.getLogout
-    );
-  }
+/** Current user ["PRIVATE"] */
+viewsRouter.get("/current", ViewsController.getCurrent);
+viewsRouter.get("/resetPassword/:token", ViewsController.getResetPassword);
+viewsRouter.get("/logout", ViewsController.getLogout);
 
-  /** De ex USER ROUTER */
-  // this.post("/premium-router", ["PREMIUM", "ADMIN"], (req, res) => {
-  //   const { first_name, email } = req.user;
-  //   if (!first_name || !email) {
-  //     return res.sendUserError(
-  //       `The fields "first_name" and "email" are required`)}
+module.exports = viewsRouter;
 
-  //   res.sendSuccess("Account validated successfully");
-  // });
-  // this.get("/only-admins", ["USER"], (req, res) => {
-  //   if (req.user.role !== "ADMIN") {
-  //     return res.sendUserError("Only admins can access this route");
-  //   }
-  //   res.sendSuccess("Dear Admin, you have reached UserRouter");
-  // });
-  // this.get("/simulate-server-error", ["PUBLIC"], (req, res) => {
-  //   // Simulamos un error del servidor
-  //   res.sendServerError("Sorry something went wrong, try again later");
-  // });
-  // this.get("/custom-accounts", ["ADMIN"], (req, res) => {
-  //   res.sendSuccess("Dear Admin, you have reached UserRouter");
-  // });
-  // this.get("/premium-members", ["PREMIUM", "ADMIN"], (req, res) => {
-  // //   const { first_name, email, membership } = req.user;
-
-  // //   if (!first_name || !email || !membership) {
-  // //     return res.sendUserError(
-  // //       `The fields "first_name", "email" and "membership" are required`
-  // //     );
-  // //   }
-  //   res.sendSuccess("Welcome, premium member!");
-  // });
-}
-
-module.exports = ViewsRouter;

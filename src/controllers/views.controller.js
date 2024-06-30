@@ -43,15 +43,21 @@ class ViewsController {
 
   static async getProducts(req, res) {
     try {
-      const { docs, ...rest } = await productsService.getProducts(req.query);
-      res.render("products", {
-        products: docs,
+      const { products, ...otherData } = await productsService.getProducts(
+        req.query || {}
+      );
+      if (!products) {
+        throw new Error("Products not found");
+      }
+      const renderedData = {
+        products,
         style: "products.css",
-        user: req.TokenUser,
-        ...rest,
-      });
+        user: req.TokenUser || token || req.user ||null,
+        ...otherData,
+      };
+      res.render("products", renderedData);
     } catch (error) {
-      res.sendServerError({ error: error.message });
+      res.sendServerError({ error: error.message || "Unknown error" });
     }
   }
 
@@ -163,7 +169,13 @@ class ViewsController {
     res.sendServerSuccess({ result });
   }
   static get404(req, res) {
-    res.send({
+    if (!req.path) {
+      return res.send({
+        status: "error",
+        message: "404 content not found, path is required",
+      });
+    }
+    return res.send({
       status: "error",
       message: `404 content not found, there is no route specified for ${req.path}`,
     });

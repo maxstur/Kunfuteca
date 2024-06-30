@@ -1,27 +1,24 @@
 const signupButton = document.getElementById("signupButton");
+const loginForm = document.getElementById("loginForm&LogGithub");
 
 signupButton.addEventListener("click", () => {
   window.location.href = "/register";
 });
 
-const loginForm = document.getElementById("loginForm");
+loginForm
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const obj = {};
+    data.forEach((value, key) => (obj[key] = value));
 
-loginForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const data = new FormData(loginForm);
-  const payload = {};
-
-  data.forEach((value, key) => (payload[key] = value));
-  fetch("/api/sessions/login", {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => res.json())
-    .then((res) => {
-      localStorage.setItem("token", res.token);
-      window.location.href = "/";
+    fetch("/api/sessions/login", {
+      method: "POST",
+      body: JSON.stringify(obj),
+      headers: { "Content-Type": "application/json" },
     });
-});
+  })
+  .then((res) => {
+    if (res.status == 200) {
+      window.location.href = "/current";
+    }
+  });

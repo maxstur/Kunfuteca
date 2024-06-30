@@ -3,7 +3,7 @@ const local = require("passport-local");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const github = require("passport-github2");
 const userModel = require("../dao/models/users");
-const { createdHash, isValidPassword } = require("../utils");
+const { createdHash, isValidPassword} = require("../utils");
 
 /** Configs */
 const {
@@ -26,25 +26,25 @@ function cookieExtractor(req) {
 
 const initializePassport = () => {
   passport.use(
-    "jwt",
     new JwtStrategy(
       {
         secretOrKey: JWT_PRIVATE_KEY,
         jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
       },
-      async (jwtPayload, done) => {
+      async (payload, done) => {
         try {
-          const user = await userModel.findById(jwtPayload.user._id);
+          const user = await userModel.findById(payload.user._id);
 
           if (!user) {
             return done(null, false, {
               message: "Have you registered? Invalid token",
             });
           }
+
           return done(null, user);
         } catch (error) {
-          console.log("Error in passport config", error);
-          return done(error, false);
+          console.error("Error in passport config", error);
+          return done(error);
         }
       }
     )
@@ -60,12 +60,12 @@ const initializePassport = () => {
       },
       async (req, email, password, done) => {
         try {
-          const { first_name, last_name, age } = req.body;
-          let role;
+          const { first_name, last_name, age} = req.body;
 
           // Validamos los campos
-          if (!first_name || !last_name || !email || !password || !age)
+          if (!first_name || !last_name || !email || !password || !age) {
             return done(null, false, { message: "All fields are required" });
+          }
 
           // Verificamos si el usuario ya existe
           const existingUser = await userModel.findOne({ email });
@@ -74,7 +74,9 @@ const initializePassport = () => {
               alert: "User with that email already exists, please login",
             });
           }
+
           // Verificamos el rol del usuario
+          let role;
           if (
             (email == EMAIL_ADMIN_1 && password == PASSWORD_ADMIN_1) ||
             (email == EMAIL_ADMIN_2 && password == PASSWORD_ADMIN_2) ||
@@ -96,10 +98,10 @@ const initializePassport = () => {
           };
 
           // Creamos el usuario
-          let result = await userModel.create(newUserData);
+          const result = await userModel.create(newUserData);
 
           // Retornamos el usuario
-          return done(null, result);
+          return done(null, result.toObject());
         } catch (error) {
           return done(error);
         }
@@ -143,35 +145,32 @@ const initializePassport = () => {
         clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
         callbackURL: "http://localhost:8080/api/sessions/githubcallback",
         session: false,
-      }, 
+      },
       async (accessToken, refreshToken, profile, done) => {
-        console.log(profile._json.email);
-
         try {
-          let role = "user";
-          if (
-            [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
-              profile._json.email
-            )
-          ) {
-            role = "admin";
-          }
           const user = await userModel.findOne({ email: profile._json.email });
           if (!user) {
-            // Crear nuevo usuario
-            let newUser = {
-              first_name: profile._json.name.split(" ")[0],
+            const adminEmails = [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3];
+            let role = "user";
+            if (adminEmails.includes(profile._json.email)) {
+              role = "admin";
+            }
+            let newUserData = {
+              first_name: profile._json.name,
               last_name: "",
-              age: 21,
               email: profile._json.email,
-              role,
+              age: 21 || 0,
+              role: role || "user",
+              cart: [],
             };
-            let result = await userModel.create(newUser);
+        
+            let result = await userModel.create(newUserData);
             
             return done(null, result);
           } else {
-            return done(null, user);
+            return done(null, user /**false, { message: "User already exists" }*/);
           }
+          
         } catch (error) {
           console.error("Error during GitHub user authentication:", error);
           return done(error);

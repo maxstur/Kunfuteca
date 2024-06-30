@@ -26,7 +26,7 @@ const MONGO_CONNECTOR_LINK =
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
-const ViewsRouter = require("./routes/views.router");
+const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
 
@@ -104,8 +104,8 @@ io.on("connection", async (socket) => {
 });
 
 // Rutas API - app.use
-app.use("/api/products", productsRouter.getRouter());
+app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-const viewsRouter = new ViewsRouter();
-app.use("/", viewsRouter.getRouter());
+app.use("/", viewsRouter);
+
