@@ -17,19 +17,6 @@ const isValidPassword = (user, password) => {
   return bcrypt.compareSync(password, user.password);
 };
 
-// Generate a token
-const generateToken = (userObj) => {
-  const token = jwt.sign(userObj, JWT_PRIVATE_KEY, {
-    expiresIn: "1h",
-  });
-  
-  if (!token) {
-    throw new Error('Failed to generate token');
-  }
-
-  return token;
-};
-
 // Para estrategias basadas en Headers con JWT
 const authHeaderToken = (req, res, next) => {
   // console.log(req.cookies);
@@ -118,7 +105,6 @@ function soldProducts() {
 module.exports = {
   createdHash,
   isValidPassword,
-  generateToken,
   authHeaderToken,
   //callPassport,
   //checkRoleAuthorization,

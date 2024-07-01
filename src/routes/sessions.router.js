@@ -3,27 +3,27 @@ const passport = require("passport");
 const SessionController = require("../controllers/sessions.controller");
 const { getToken } = require("../utils");
 
-const sessionRouter = Router();
+const sessionsRouter = Router();
 
-sessionRouter.post(
+sessionsRouter.post(
   "/register",
   passport.authenticate("register"),
   SessionController.registerUser
 );
-sessionRouter.post(
+sessionsRouter.post(
   "/login",
   passport.authenticate("login"),
   SessionController.login
 );
-sessionRouter.get("/login-fail", SessionController.getLoginError);
-sessionRouter.get("/logout", SessionController.logout);
+sessionsRouter.get("/login-fail", SessionController.getLoginError);
+sessionsRouter.get("/logout", SessionController.logout);
 
-sessionRouter.get(
+sessionsRouter.get(
   "/github",
   passport.authenticate("github", { scope: ["user:email"], session: false }),
   SessionController.github
 );
-sessionRouter.get(
+sessionsRouter.get(
   "/githubcallback",
   passport.authenticate("github", {
     failureRedirect: "/login",
@@ -32,8 +32,8 @@ sessionRouter.get(
   SessionController.github  
 );
 
-sessionRouter.get("/current", SessionController.getCurrent);
-sessionRouter.post("/reset-password", SessionController.getResetPassword);
+sessionsRouter.get("/current", SessionController.getCurrent);
+sessionsRouter.post("/reset-password", SessionController.getResetPassword);
 
-module.exports = sessionRouter;
+module.exports = sessionsRouter;
 

@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const { generateToken, createdHash} = require("../utils");
+const { createdHash} = require("../utils");
 const userModel = require("../dao/models/users");
 
 class SessionsController {
@@ -40,7 +40,7 @@ class SessionsController {
         email,
       };
 
-      const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
+      const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
         expiresIn: "1h",
       });
       res.cookie("rodsCookie", token, {
@@ -94,7 +94,7 @@ class SessionsController {
         role: role || "user",
       };
       console.log(serializableUser, JWT_PRIVATE_KEY);
-      const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
+      const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
         expiresIn: "1h",
       });
       console.log(token);

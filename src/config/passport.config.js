@@ -3,7 +3,9 @@ const local = require("passport-local");
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const github = require("passport-github2");
 const userModel = require("../dao/models/users");
-const { createdHash, isValidPassword} = require("../utils");
+const { createdHash, isValidPassword } = require("../utils");
+const jwt = require("jsonwebtoken");
+
 
 /** Configs */
 const {
@@ -15,6 +17,7 @@ const {
   EMAIL_ADMIN_3,
   PASSWORD_ADMIN_3,
 } = require("../config/environment.config");
+const { options } = require("../routes/sessions.router");
 
 function cookieExtractor(req) {
   let token = null;
@@ -60,7 +63,7 @@ const initializePassport = () => {
       },
       async (req, email, password, done) => {
         try {
-          const { first_name, last_name, age} = req.body;
+          const { first_name, last_name, age } = req.body;
 
           // Validamos los campos
           if (!first_name || !last_name || !email || !password || !age) {
@@ -78,9 +81,9 @@ const initializePassport = () => {
           // Verificamos el rol del usuario
           let role;
           if (
-            (email == EMAIL_ADMIN_1 && password == PASSWORD_ADMIN_1) ||
-            (email == EMAIL_ADMIN_2 && password == PASSWORD_ADMIN_2) ||
-            (email == EMAIL_ADMIN_3 && password == PASSWORD_ADMIN_3)
+            email == EMAIL_ADMIN_1 ||
+            email == EMAIL_ADMIN_2 ||
+            email == EMAIL_ADMIN_3
           ) {
             role = "admin";
           } else {
@@ -95,13 +98,18 @@ const initializePassport = () => {
             age,
             password: createdHash(password),
             role,
+            cart: [],
           };
 
           // Creamos el usuario
           const result = await userModel.create(newUserData);
 
+          if (!result) {
+            return done(null, false, { message: "Something went wrong" });
+          }
+
           // Retornamos el usuario
-          return done(null, result.toObject());
+          return done(null, result);
         } catch (error) {
           return done(error);
         }
@@ -163,14 +171,16 @@ const initializePassport = () => {
               role: role || "user",
               cart: [],
             };
-        
+
             let result = await userModel.create(newUserData);
-            
+
             return done(null, result);
           } else {
-            return done(null, user /**false, { message: "User already exists" }*/);
+            return done(
+              null,
+              user /**false, { message: "User already exists" }*/
+            );
           }
-          
         } catch (error) {
           console.error("Error during GitHub user authentication:", error);
           return done(error);

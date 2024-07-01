@@ -107,5 +107,7 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
+
+
 app.use("/", viewsRouter);
 

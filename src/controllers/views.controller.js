@@ -43,21 +43,28 @@ class ViewsController {
 
   static async getProducts(req, res) {
     try {
-      const { products, ...otherData } = await productsService.getProducts(
-        req.query || {}
-      );
-      if (!products) {
+      const {
+        products: foundProducts,
+        token,
+        ...otherData
+      } = await productsService.getProducts(req.query || {});
+
+      if (!foundProducts) {
         throw new Error("Products not found");
       }
+
       const renderedData = {
-        products,
+        products: foundProducts,
         style: "products.css",
-        user: req.TokenUser || token || req.user ||null,
+        user: req.user || null,
+        token: token || null,
         ...otherData,
       };
+
       res.render("products", renderedData);
     } catch (error) {
-      res.sendServerError({ error: error.message || "Unknown error" });
+      const errorMessage = error.message || "Unknown error";
+      res.sendServerError({ error: errorMessage });
     }
   }
 

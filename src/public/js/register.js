@@ -17,6 +17,9 @@ registerForm.addEventListener("submit", (event) => {
   })
     .then(res => res.json())
     .then((data) => {
-      console.log(data, "data");
+      if (data.status == "success") {
+      } else {
+        alert(data.errror.message);
+      }
     });
 });
