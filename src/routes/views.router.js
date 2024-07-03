@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const ViewsController = require("../controllers/views.controller");
+const { authHeaderToken, getToken } = require("../utils");
 
 const viewsRouter = Router();
 
@@ -13,7 +14,7 @@ viewsRouter.get("/login", ViewsController.getLogin);
 viewsRouter.get("*", ViewsController.get404);
 
 /** products with token */
-viewsRouter.get("/products", ViewsController.getProducts);
+viewsRouter.get("/products", getToken, ViewsController.getProducts);
 viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
 viewsRouter.get("/products/:pid", ViewsController.getProductById);
 
@@ -22,9 +23,11 @@ viewsRouter.get("/carts/:cid", ViewsController.getCartById);
 viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
 /** Current user ["PRIVATE"] */
-viewsRouter.get("/current", ViewsController.getCurrent);
+viewsRouter.get(
+  "/current", getToken,
+  ViewsController.getCurrent
+);
 viewsRouter.get("/resetPassword/:token", ViewsController.getResetPassword);
 viewsRouter.get("/logout", ViewsController.getLogout);
 
 module.exports = viewsRouter;
-

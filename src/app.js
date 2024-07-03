@@ -38,6 +38,10 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 /** App */
 const app = express();
 
+/** Passport */
+initializePassport();
+app.use(passport.initialize());
+
 /** Cookie Parser & Middlewares*/
 app.use(cookieParser());
 app.use(express.static(`${__dirname}/public`));
@@ -58,10 +62,6 @@ mongoose
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-/** Passport */
-initializePassport();
-app.use(passport.initialize());
 
 // Server Config
 const serverHttp = app.listen(PORT, () => {
@@ -108,6 +108,4 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
 
-
 app.use("/", viewsRouter);
-

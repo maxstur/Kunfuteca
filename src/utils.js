@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
-const passport = require("passport");
 
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
 // Y "genSaltSync" para generar un salt o sea una cadena aleatoria y el número es la longitud
@@ -17,80 +16,101 @@ const isValidPassword = (user, password) => {
   return bcrypt.compareSync(password, user.password);
 };
 
-// Para estrategias basadas en Headers con JWT
-const authHeaderToken = (req, res, next) => {
-  // console.log(req.cookies);
-  const authHeader = undefined;
-  if (!req.cookies || !req.cookies.rodsCookie) {
-    return res
-      .status(401)
-      .send({ status: "error", error: "Not authenticated" });
-  }
-
-  req.headers.cookie.split('; ');
-
-  // token, authorization header: "Bearer token"
-  const token = req.cookies.rodsCookie;
-  jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    req.tokenUser = decoded.payload;
-    req.user = decoded.payload;
-    next();
-  });
+// Generar el token
+const generateToken = (user) => {
+  return jwt.sign({ user }, JWT_PRIVATE_KEY, { expiresIn: '1h' });
 };
 
-// Obtener el token de la cookie y verificarlo. Para estrategias basadas en Cookies
-const getToken = (req, res, next) => {
+const validateToken = (req, res, next) => {
   const token = req.cookies.rodsCookie;
+  if (!token) {
+    return res.status(401).send({ status: 'error', error: 'Not authenticated' });
+  }
 
+  try {
+    const decodedToken = jwt.verify(token, JWT_PRIVATE_KEY);
+    req.user = decodedToken.user;
+    next();
+  } catch (error) {
+    return res.status(401).send({ status: 'error', error: 'Invalid token' });
+  }
+};
+
+const setTokenCookie = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).send({ status: 'error', error: 'Not authenticated' });
+  }
+  
+  const token = generateToken(req.user);
+  res.cookie('authToken', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Strict',
+  });
+
+  next();
+};
+
+// Para estrategias basadas en Headers con JWT
+const authHeaderToken = (req, res, next) => {
+  if (!req || !req.cookies || !req.cookies.rodsCookie) {
+    return res.status(401).send({ status: "error", error: "Not authenticated" });
+  }
+
+  const token = req.cookies.rodsCookie;
   if (!token) {
     return res.status(401).send({ status: "error", error: "Not authenticated" });
   }
 
-  jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
+  jwt.verify(token, JWT_PRIVATE_KEY, (err, credentials) => {
     if (err) {
-      return res.status(403).send({ status: "error", error: "Invalid token" });
+      return res.status(403).send({ status: "error", error: "Not authorized" });
     }
+    if (!credentials || !credentials.user) {
+      return res.status(403).send({ status: "error", error: "Not authorized" });
+    }
+    req.user = credentials.user;
+    next();
+  });
+};
 
-    req.tokenUser = decoded;
+// Obtener el token del header y verificarlo. Para estrategia basada en JWT
+const getToken = (req, res, next) => {
+  const token = req.header.authorization;
+
+  if (!token) {
+    throw new Error( "Not authenticated" );
+  }
+
+  const [bearer, tokenValue] = token.split(" ");
+  if (bearer !== "Bearer" || !tokenValue) {
+    throw new Error( "Invalid token format" );
+  }
+  jwt.verify(tokenValue, JWT_PRIVATE_KEY, (err, decoded) => {
+    if (err) {
+      throw new Error( "Invalid token" );
+    }
     req.user = decoded;
     next();
   });
 };
 
-// const callPassport = (strategy) => {
-//   return (req, res, next) => {
-//     passport.authenticate(strategy, { session: false }, async (err, user, info) => {
-//       if (err) {
-//         return res.status(500).send({ status: "error", error: err.message });
-//       }
-//       if (!user) {
-//         return res.status(401).send({
-//           status: "error",
-//           error: info.message ? info.message : info.toString(),
-//         });
-//       }
-//       req.user = user;
-//       next();
-//     })(req, res, next);
-//   };
-// };
+const jwtMiddleware = (req, res, next) => {
+  const token = req.headers.authorization;
 
-// const checkRoleAuthorization = (...targettedRoles) => {
-//   return (req, res, next) => {
-//     if (
-//       !req.user ||
-//       !req.user.role ||
-//       !req.user.admin ||
-//       !targettedRoles.includes(req.user.role)
-//     ) {
-//       return res.status(403).send({ status: "error", error: "Not authorized" });
-//     }
-//     next();
-//   };
-// };
+  if (!token) {
+    return res.status(401).json({ error: "Missing token" });
+  }
+
+  jwt.verify(token.split(" ")[1], JWT_PRIVATE_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid token" });
+    }
+
+    req.user = decoded;
+    next();
+  });
+};
 
 function soldProducts() {
   // llamada operaciónCompleja
@@ -106,8 +126,9 @@ module.exports = {
   createdHash,
   isValidPassword,
   authHeaderToken,
-  //callPassport,
-  //checkRoleAuthorization,
   soldProducts,
   getToken,
+  generateToken,
+  setTokenCookie,
+  jwtMiddleware,
 };

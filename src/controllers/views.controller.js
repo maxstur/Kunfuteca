@@ -45,8 +45,7 @@ class ViewsController {
     try {
       const {
         products: foundProducts,
-        token,
-        ...otherData
+        ...rest
       } = await productsService.getProducts(req.query || {});
 
       if (!foundProducts) {
@@ -56,9 +55,7 @@ class ViewsController {
       const renderedData = {
         products: foundProducts,
         style: "products.css",
-        user: req.user || null,
-        token: token || null,
-        ...otherData,
+        ...rest,
       };
 
       res.render("products", renderedData);

@@ -1,17 +1,18 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const { createdHash} = require("../utils");
+const { createdHash, generateToken, setTokenCookie } = require("../utils");
 const userModel = require("../dao/models/users");
 
 class SessionsController {
-  static async registerUser(req, res) {
+  static async registerUser(req, res, next) {
     try {
-      res.send({
+      res.status(200).send({
         status: "success",
         message: "User registered successfully",
+        //payload: await userModel.create(req.body),
       });
     } catch (error) {
-      res.sendUserError({ error: "User already exists" });
+      next(error);
     }
   }
 
@@ -23,40 +24,31 @@ class SessionsController {
     });
   }
   static async login(req, res) {
-    try {
-      if (!req.user) {
-        throw new Error("User not found");
-      }
-
-      const { _id, first_name, last_name, email, age, role, cart } = req.user;
-
-      const serializableUser = {
-        id: _id,
-        first_name,
-        last_name,
-        role,
-        age,
-        cart,
-        email,
-      };
-
-      const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
-        expiresIn: "1h",
-      });
-      res.cookie("rodsCookie", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "Strict",
-      });
-
-      res.send({
-        status: "success",
-        message: "Logged in successfully",
-      });
-    } catch (error) {
-      console.error(error);
-      res.sendUserError({ error: "Failed to login" });
+    if (!req || !req.user) {
+      return res.status(400).send({ error: "Failed to login" });
     }
+
+    const { user } = req;
+    const { _id, first_name, last_name, email, age, role, cart } = user;
+    if (!_id || !first_name || !last_name || !email || !age || !role || !cart) {
+      return res.status(400).send({ error: "Failed to login" });
+    }
+
+    const token = generateToken({
+      id: _id,
+      first_name,
+      last_name,
+      role,
+      age,
+      cart,
+      email,
+    });
+    setTokenCookie(res, token);
+
+    res.send({
+      status: "success",
+      message: "Logged in successfully",
+    });
   }
 
   static async getLoginError(req, res) {
@@ -81,47 +73,22 @@ class SessionsController {
   }
 
   static async github(req, res) {
-    try {
-      const { _id, first_name, last_name, role, age, email, cart } = req.user;
-      console.log(_id, first_name, last_name, role, age, email, cart);
-      const serializableUser = {
-        id: _id,
-        first_name: first_name || "",
-        last_name: last_name || "",
-        age: age || 0,
-        email: email || "",
-        cart: cart || [],
-        role: role || "user",
-      };
-      console.log(serializableUser, JWT_PRIVATE_KEY);
-      const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
-        expiresIn: "1h",
-      });
-      console.log(token);
-      res.cookie("rodsCookie", token, {
-        httpOnly: true,
-      });
-      console.log("cookie set");
-      res.redirect("/products");
-    } catch (error) {
-      console.error(error);
-      res
-        .status(error.status || 500)
-        .send({ error: error.message || "Failed to login with GitHub" });
-    }
+    const { _id, first_name, last_name, role, age, email } = req.user;
+    const serializableUser = {
+      id: _id,
+      first_name,
+      last_name,
+      age: Number(age),
+      email,
+    };
+    const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
+      expiresIn: "1h",
+    });
+    res.setheader("Authorization", `Bearer ${token}`).redirect("/products");
   }
 
   static async getCurrent(req, res) {
-    if (req.user) {
-      try {
-        const user = await userModel.findOne({ _id: req.user._id }).lean();
-        res.send({ status: "success", payload: user });
-      } catch (error) {
-        res.sendUserError({ error: "There was a problem getting the user" });
-      }
-    } else {
-      res.sendUserError({ error: "User not authenticated" });
-    }
+    res.json({ user: req.user });
   }
 
   static async getResetPassword(req, res) {
@@ -151,5 +118,27 @@ class SessionsController {
       payload: result,
     });
   }
+
+  static async getForgotPassword(req, res) {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).send({
+        status: "error",
+        error: "You sould provide right email",
+      });
+    }
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(400).send({
+        status: "error",
+        error: "User not found",
+      });
+    }
+    res.send({
+      status: "success",
+      message: "Email sent successfully",
+    });
+  }
 }
+
 module.exports = SessionsController;
