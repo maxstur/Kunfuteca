@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { JWT_PRIVATE_KEY } = require("./config/environment.config");
-const passport = require("passport");
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
 // Utilizamos "HashSync" de bcrypt para hashear la contraseña
 // Y "genSaltSync" para generar un salt o sea una cadena aleatoria y el número es la longitud
@@ -17,76 +16,43 @@ const isValidPassword = (user, password) => {
   return bcrypt.compareSync(password, user.password);
 };
 
-// Generamos un token
+// Generar el token
 const generateToken = (user) => {
-  delete user.password;
-  const token = jwt.sign({ payload: user }, JWT_PRIVATE_KEY, {
-    expiresIn: "1h",
-  });
-  return token;
+  return jwt.sign({ user }, JWT_PRIVATE_KEY, { expiresIn: "1h" });
 };
 
-const authToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
+const validateToken = (req, res, next) => {
+  const token = req.cookies.rodsCookie;
+  if (!token) {
     return res
       .status(401)
       .send({ status: "error", error: "Not authenticated" });
   }
 
-  // token, authorization header: "Bearer token"
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, JWT_PRIVATE_KEY, (err, credentials) => {
-    if (err) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    req.user = credentials.user;
+  try {
+    const decodedToken = jwt.verify(token, JWT_PRIVATE_KEY);
+    req.user = decodedToken.user;
     next();
+  } catch (error) {
+    return res.status(401).send({ status: "error", error: "Invalid token" });
+  }
+};
+
+const setTokenCookie = (req, res, next) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .send({ status: "error", error: "Not authenticated" });
+  }
+
+  const token = generateToken(req.user);
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
   });
-};
 
-// Obtener el token de la cookie y verificarlo
-const getToken = (req, res, next) => {
-  let token = req.cookies.rodsCookie;
-  if (!token)
-    return res.status(403).send({ status: "error", error: "Not authorized" });
-  jwt.verify(token, JWT_PRIVATE_KEY, (err, decoded) => {
-    if (err) res.status(403).send("Not authorized");
-    req.tokenUser = decoded.payload;
-    next();
-  });
-};
-
-const callPassport = (strategy) => {
-  return (req, res, next) => {
-    passport.authenticate(strategy, (err, user, info) => {
-      if (err) {
-        return res.status(500).send({ status: "error", error: err.message });
-      }
-      if (!user) {
-        return res.status(401).send({
-          status: "error",
-          error: info.message ? info.message : info.toString(),
-        });
-      }
-      req.user = user;
-      next();
-    })(req, res, next);
-  };
-};
-
-const checkRoleAuthorization = (...targettedRoles) => {
-  return (req, res, next) => {
-    if (
-      !req.user ||
-      !req.user.role ||
-      !req.user.admin ||
-      !targettedRoles.includes(req.user.role)
-    ) {
-      return res.status(403).send({ status: "error", error: "Not authorized" });
-    }
-    next();
-  };
+  next();
 };
 
 function soldProducts() {
@@ -102,10 +68,8 @@ function soldProducts() {
 module.exports = {
   createdHash,
   isValidPassword,
-  generateToken,
-  authToken,
-  callPassport,
-  checkRoleAuthorization,
   soldProducts,
-  getToken,
+  generateToken,
+  setTokenCookie,
+  validateToken,
 };

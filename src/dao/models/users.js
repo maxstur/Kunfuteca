@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   age: Number,
-  password: { type: String, required: true }, 
+  password: { type: String },
   cart: {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: "carts" }],
   },

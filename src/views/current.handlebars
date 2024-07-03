@@ -2,7 +2,7 @@
 
 <div id="currentProfile"></div>
 
-{{#ifEither first_name email}}
+{{#if (first_name email)}}
   {{#if first_name}}
     <p>Nombre: {{first_name}}</p>
   {{/if}}
@@ -12,7 +12,8 @@
 {{else}}
   {{#if age}}
   <p>Hurry up! No time to loose with your {{age}} years old.</p>
-{{/ifEither}}
+  {{/if}}
+{{/if}}
 
 
 {{#if user}}

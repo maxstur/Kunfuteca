@@ -1,51 +1,51 @@
+const { Command } = require("commander");
+const dotenv = require("dotenv");
+
+/** Conf Commander & Dotenv*/
+const program = new Command();
+program.option("--mode <modo>").parse(process.argv);
+const options = program.opts();
+console.log(options);
+dotenv.config({
+  path: `.env.${options.mode}`,
+});
+
 const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
-// const session = require("express-session");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
 const cookieParser = require("cookie-parser");
-const dotenv = require("dotenv");
-const { Command } = require("commander");
 
 /** Configs */
-const {
-  PORT,
-  ENVIRONMENT,
-  JWT_PRIVATE_KEY,
-  MONGO_CONNECTOR_LINK,
-  SESSION_SECRET,
-} = require("./config/environment.config");
+const PORT = require("./config/environment.config").PORT;
+const ENVIRONMENT = require("./config/environment.config").ENVIRONMENT;
+const MONGO_CONNECTOR_LINK =
+  require("./config/environment.config").MONGO_CONNECTOR_LINK;
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
 const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
-//const CustomRouter = require("./routes/custom.router");
-const userRouter = require("./routes/user.router");
 
+/** Managers */
 const ProductManager = require("./dao/dbManagers/ProductManager");
 const messageModel = require("./dao/models/message");
 const productManager = new ProductManager(__dirname + "/files/products.json");
 
-/** Conf Commander & Dotenv*/
-const program = new Command();
-program.option("--mode <modo>").parse();
-
-const options = program.opts();
-console.log(options);
-
-dotenv.config({
-  path: `.env.${options.mode}`,
-});
-
 /** App */
 const app = express();
 
-/** Cookie Parser */
+/** Cookie Parser & Middlewares*/
 app.use(cookieParser());
+app.use(express.static(`${__dirname}/public`));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/** Passport */
+initializePassport();
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
@@ -57,24 +57,10 @@ mongoose
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
-
-/** Middlewares */
-app.use(express.static(`${__dirname}/public`));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// app.use(session({
-//   secret: SESSION_SECRET, 
-//   resave: false,
-//   saveUninitialized: false
-// }));
-
-/** Passport */
-initializePassport();
+// Passport
 app.use(passport.initialize());
-app.use(passport.session());
 
-
+// Server Config
 const serverHttp = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}, in environment ${ENVIRONMENT}`);
 });
@@ -118,6 +104,5 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-const UserRouter = new userRouter();
-app.use("/api/users", UserRouter.getRouter());
+
 app.use("/", viewsRouter);
