@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
-
 dotenv.config();
+
 
 module.exports = {
   MONGO_CONNECTOR_LINK: process.env.MONGO_CONNECTOR_LINK,

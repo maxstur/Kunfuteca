@@ -5,37 +5,43 @@ const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/users");
 const { createdHash, isValidPassword } = require("../utils");
 const {
-  JWT_PRIVATE_KEY,
   EMAIL_ADMIN_1,
   EMAIL_ADMIN_2,
   EMAIL_ADMIN_3,
-  PASSWORD_CHARSET,
 } = require("../config/environment.config");
+const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 function cookieExtractor(req) {
   let token = null;
   if (req && req.cookies) {
-    token = req.cookies["rodsCookie"];
+    token = req.cookies["rodsCookie", "authToken"];
   }
   return token;
 }
 
 const initializePassport = () => {
-  const jwtOptions = {
-    secretOrKey: JWT_PRIVATE_KEY,
-    jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
-  };
-
   passport.use(
-    new JwtStrategy(jwtOptions, async (payload, done) => {
-      try {
-        const user = await userModel.findById(payload.user._id);
-        return user ? done(null, user) : done(null, false, { message: "Invalid token" });
-      } catch (error) {
-        console.error("Error in JWT strategy:", error);
-        done(error);
+    "jwt",
+    new JwtStrategy(
+      {
+        secretOrKey: JWT_PRIVATE_KEY,
+        jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+      },
+      async (jwtPayload, done) => {
+        try {
+          const user = await userModel.findById(jwtPayload.user._id);
+          if (!user) {
+            return done(null, false, {
+              message: "Have you registered? Invalid token",
+            });
+          }
+          return done(null, user);
+        } catch (error) {
+          console.log("Error in passport config", error);
+          return done(error, false);
+        }
       }
-    })
+    )
   );
 
   passport.use(
@@ -44,6 +50,7 @@ const initializePassport = () => {
       {
         passReqToCallback: true,
         usernameField: "email",
+        secretOrKey: JWT_PRIVATE_KEY,
         session: false,
       },
       async (req, email, password, done) => {
@@ -145,7 +152,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (userId, done) => {
-  let user = await userModel.findOne({ _id: userId });
+  let user = await userModel.findById({ _id: userId });
   done(null, user);
 });
 

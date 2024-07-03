@@ -6,10 +6,11 @@ const userModel = require("../dao/models/users");
 class SessionsController {
   static async registerUser(req, res, next) {
     try {
-      res.status(200).send({
+      const user = await userModel.create(req.body);
+      res.status(201).send({
         status: "success",
         message: "User registered successfully",
-        //payload: await userModel.create(req.body),
+        payload: user,
       });
     } catch (error) {
       next(error);
@@ -45,6 +46,8 @@ class SessionsController {
     });
     setTokenCookie(res, token);
 
+    res.redirect("/products");
+
     res.send({
       status: "success",
       message: "Logged in successfully",
@@ -64,7 +67,7 @@ class SessionsController {
   }
 
   static async logout(req, res) {
-    res.clearCookie("rodsCookie");
+    res.clearCookie("authToken");
     res.redirect("/login");
     res.send({
       status: "success",
@@ -84,7 +87,13 @@ class SessionsController {
     const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
       expiresIn: "1h",
     });
-    res.setheader("Authorization", `Bearer ${token}`).redirect("/products");
+
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    });
+    res.redirect("/products");
   }
 
   static async getCurrent(req, res) {

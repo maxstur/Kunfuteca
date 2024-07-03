@@ -38,15 +38,14 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 /** App */
 const app = express();
 
-/** Passport */
-initializePassport();
-app.use(passport.initialize());
-
 /** Cookie Parser & Middlewares*/
 app.use(cookieParser());
 app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/** Passport */
+initializePassport();
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
@@ -58,10 +57,8 @@ mongoose
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.error("Could not connect to MongoDB", err));
 
-/** Middlewares */
-app.use(express.static(`${__dirname}/public`));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Passport
+app.use(passport.initialize());
 
 // Server Config
 const serverHttp = app.listen(PORT, () => {

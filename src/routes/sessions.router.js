@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const passport = require("passport");
 const SessionController = require("../controllers/sessions.controller");
-const { getToken, setTokenCookie, jwtMiddleware } = require("../utils");
+const { setTokenCookie, } = require("../utils");
 
 const sessionsRouter = Router();
 
@@ -35,7 +35,7 @@ sessionsRouter.get(
   SessionController.github
 );
 
-sessionsRouter.get("/current", jwtMiddleware, SessionController.getCurrent);
+sessionsRouter.get("/current", SessionController.getCurrent);
 
 sessionsRouter.post("/reset-password", SessionController.getResetPassword);
 
