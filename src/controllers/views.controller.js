@@ -37,16 +37,14 @@ class ViewsController {
     try {
       res.render("chat", {});
     } catch (error) {
-      res.sendServerError({ error: "Chat doesn't exist" });
+      res.send({ status: "error", error: "Chat doesn't exist" });
     }
   }
 
   static async getProducts(req, res) {
     try {
-      const {
-        products: foundProducts,
-        ...rest
-      } = await productsService.getProducts(req.query || {});
+      const { products: foundProducts, ...rest } =
+        await productsService.getProducts(req.query || {});
 
       if (!foundProducts) {
         throw new Error("Products not found");
@@ -61,7 +59,7 @@ class ViewsController {
       res.render("products", renderedData);
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
-      res.sendServerError({ error: errorMessage });
+      res.send({ status: "error", error: errorMessage });
     }
   }
 
@@ -70,7 +68,8 @@ class ViewsController {
       const { docs, ...rest } = await productsService.getAll(req.query);
       res.render("products_alternative", { products: docs, ...rest });
     } catch (error) {
-      res.sendServerError({
+      res.send({
+        status: "error",
         error: "Error al obtener los productos alternativos",
       });
     }
@@ -81,7 +80,7 @@ class ViewsController {
       const product = await productsService.getAll(req.params.pid);
       res.render("product", { product: product });
     } catch (error) {
-      res.sendServerError({ error: "Product by id doesn't exist" });
+      res.send({ status: "error", error: "Product by id doesn't exist" });
     }
   }
 
@@ -90,7 +89,7 @@ class ViewsController {
       const cart = await cartsService.getById(req.params.cid); // O quizás: productManager
       res.render("cart", { ...cart, style: "products.css" });
     } catch (error) {
-      res.sendServerError({ error: "Cart by id doesn't exist" });
+      res.send({ status: "error", error: "Cart by id doesn't exist" });
     }
   }
 
@@ -99,27 +98,42 @@ class ViewsController {
       const { docs, ...rest } = await productManager.getProducts();
       res.render("cartProducts", { products: docs, ...rest });
     } catch (error) {
-      res.sendServerError({
-        error: "There was an error in the cart products route",
-      });
+      res.send({ status: "error", error: "Cart products don't exist" });
     }
   }
 
   /** Register - Login - Current - Logout - More */
   static async getRegister(req, res) {
-    try {
-      res.render("register", {});
-    } catch (error) {
-      res.sendServerError({ error: error.message });
-    }
+    res.render("register", {});
+  }
+
+  static async getRegisterError(req, res) {
+    res.status(400).send({
+      status: "error",
+      error: "User already exists",
+      alert: "User already exists, please login",
+    });
   }
 
   static async getLogin(req, res) {
-    try {
-      res.render("login", {});
-    } catch (error) {
-      res.sendServerError({ error: error.message });
-    }
+    res.render("login", {});
+  }
+
+  static async getLoginError(req, res) {
+    res.status(401).send({
+      status: "error",
+      error: "Invalid credentials",
+      alert: "Invalid credentials, please try again",
+    });
+  }
+
+  static async getLoginSuccess(req, res) {
+    res.status(200).send({
+      status: "success",
+      message: "User logged in successfully",
+      payload: {
+        user: req.user}
+    });
   }
 
   static async getCurrent(req, res) {

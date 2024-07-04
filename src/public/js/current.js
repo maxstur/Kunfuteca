@@ -11,7 +11,10 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
   fetch("api/sessions/current", {
     method: "GET",
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
   })
     .then((res) => {
       if (res.status === 403 || res.status === 401) {
@@ -27,7 +30,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
             <h3>${user.first_name} ${user.last_name}</h3>
             <p>${user.email}</p>
             <p>${user.age}</p>
-            <p>${usera.role}</p>
+            <p>${user.role}</p>
         `;
       } else {
         container.innerHTML =

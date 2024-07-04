@@ -5,37 +5,42 @@ signupButton.addEventListener("click", () => {
   window.location.href = "/register";
 });
 
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const data = new FormData(loginForm);
   const obj = {};
   data.forEach((value, key) => (obj[key] = value));
 
-  fetch("/api/sessions/login", {
-    method: "POST",
-    body: JSON.stringify(obj),
-    headers: { "Content-Type": "application/json" },
-  }).then((res) => {
-    if (res.status == 200) {
-      window.location.href = "/products";
+  try {
+    const response = await fetch("/api/sessions/login", {
+      method: "POST",
+      body: JSON.stringify(obj),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      if (result.status == "success") {
+        window.location.href = result.redirectUrl || "/products";
+      } else {
+        alert(
+          result.message || "Login sucessful, but no  redirect URL provided"
+        );
+      }
+    } else if (response.status == 401) {
+      alert("Invalid credentials. Please try again.");
     } else {
-      alert("There was an unexpected error. Please try again or Register.");
+      alert(
+        result.message ||
+          "There was an unexpected error. Please try again or Register."
+      );
     }
-  });
-
-  // Manejar el error de inicio de sesión
-
-  // console.error("Login failed:", res.status);
-  // res.status(200).send({
-  //   status: "success",
-  //   message: "User logged in successfully",
-
-  // });
-  // if (res.status == 200) {
-  //
-  // } else {
-  // Manejar el error de inicio de sesión
-
-  //   }
+  } catch (error) {
+    console.error("Login error:", error);
+    alert(
+      "There was a network error. Please check your connection and try again."
+    );
+  }
 });

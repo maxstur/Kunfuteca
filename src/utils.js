@@ -13,7 +13,10 @@ const createdHash = (password) => {
 
 // Validar que la contraseña coincida con "CompareSync" de bcrypt
 const isValidPassword = (user, password) => {
-  return bcrypt.compareSync(password, user.password);
+  console.log("Comparing passwords");
+  const result = bcrypt.compareSync(password, user.password);
+  console.log("Passwords Comparison Result: ", result);
+  return result;
 };
 
 // Generar el token
@@ -22,7 +25,7 @@ const generateToken = (user) => {
 };
 
 const validateToken = (req, res, next) => {
-  const token = req.cookies.rodsCookie;
+  const token = req.cookies.authToken;
   if (!token) {
     return res
       .status(401)
@@ -30,8 +33,8 @@ const validateToken = (req, res, next) => {
   }
 
   try {
-    const decodedToken = jwt.verify(token, JWT_PRIVATE_KEY);
-    req.user = decodedToken.user;
+    const decoded = jwt.verify(token, JWT_PRIVATE_KEY);
+    req.user = decoded.user;
     next();
   } catch (error) {
     return res.status(401).send({ status: "error", error: "Invalid token" });

@@ -11,21 +11,28 @@ const {
 } = require("../config/environment.config");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
-function cookieExtractor(req) {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies["rodsCookie", "authToken"];
-  }
-  return token;
-}
+// const cookieExtractor = function(req) {
+//   let token = null;
+//   if (req && req.cookies) {
+//     token = req.cookies["authToken"];
+//   }
+//   return token;
+// }
+const extractors = [
+  (req) => req?.cookies?.authToken,
+  (req) => req?.headers?.authorization?.split(' ')[1],
+];
 
 const initializePassport = () => {
   passport.use(
     "jwt",
     new JwtStrategy(
       {
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
         secretOrKey: JWT_PRIVATE_KEY,
-        jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+        
+        passReqToCallback: true,
+        session: false,
       },
       async (jwtPayload, done) => {
         try {
@@ -52,6 +59,7 @@ const initializePassport = () => {
         usernameField: "email",
         secretOrKey: JWT_PRIVATE_KEY,
         session: false,
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
       },
       async (req, email, password, done) => {
         try {
@@ -88,13 +96,39 @@ const initializePassport = () => {
     )
   );
 
+  // passport.use(
+  //   "login",
+  //   new LocalStrategy(
+  //     {
+  //       usernameField: "email",
+  //       session: false,
+  //       secretOrKey: JWT_PRIVATE_KEY,
+  //       jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
+  //     },
+  //     async (email, password, done) => {
+  //       try {
+  //         console.log("email", email, "password", password);
+  //         const user = await userModel.findOne({ email });
+  //         if (!user || !isValidPassword(user, password)) {
+  //           console.log("User: ", user, "Invalid credentials");
+  //           return done(null, false, { message: "Invalid credentials" });
+  //         }
+
+  //         return done(null, user);
+  //       } catch (error) {
+  //         console.error("Error during user authentication:", error);
+  //         done(error);
+  //       }
+  //     }
+  //   )
+  // );
+
   passport.use(
-    "login",
+    "local",
     new LocalStrategy(
       {
         usernameField: "email",
-        session: false,
-        secretOrKey: JWT_PRIVATE_KEY,
+        passwordField: "password",
       },
       async (email, password, done) => {
         try {
@@ -102,11 +136,9 @@ const initializePassport = () => {
           if (!user || !isValidPassword(user, password)) {
             return done(null, false, { message: "Invalid credentials" });
           }
-
           return done(null, user);
         } catch (error) {
-          console.error("Error during user authentication:", error);
-          done(error);
+          return done(error);
         }
       }
     )

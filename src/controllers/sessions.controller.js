@@ -1,12 +1,16 @@
 const jwt = require("jsonwebtoken");
 const { JWT_PRIVATE_KEY } = require("../config/environment.config");
-const { createdHash, generateToken, setTokenCookie } = require("../utils");
+const {
+  createdHash,
+  generateToken,
+  setTokenCookie,
+  isValidPassword,
+} = require("../utils");
 const userModel = require("../dao/models/users");
 
 class SessionsController {
   static async registerUser(req, res, next) {
     try {
-      const user = await userModel.create(req.body);
       res.status(201).send({
         status: "success",
         message: "User registered successfully",
@@ -24,40 +28,98 @@ class SessionsController {
       alert: "User already exists, please login",
     });
   }
+
   static async login(req, res) {
-    if (!req || !req.user) {
-      return res.status(400).send({ error: "Failed to login" });
+    console.log("Login attempt for", req.body.email);
+    try {
+      // const { email, password } = req.body;
+      const user = await userModel.findOne({ email: req.body.email });
+      console.log("User found:", user ? user.email : "No");
+
+      if (!user /**|| !isValidPassword(user, req.body.password)*/) {
+        console.log("User not found");
+        return res
+          .status(401)
+          .send({ status: "error", message: "Invalid credentials" });
+      }
+
+      const validPassword = isValidPassword(user, req.body.password);
+      console.log("Password valid:", validPassword ? "Yes" : "No");
+
+      if (!validPassword) {
+        console.log("Invalid password");
+        return res
+          .status(401)
+          .send({ status: "error", message: "Invalid credentials" });
+      }
+
+      console.log("Login successful");
+
+      const token = generateToken(user);
+
+      res.cookie("authToken", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
+      res
+        .status(200)
+        .send({
+          status: "success",
+          message: "Login successful",
+          redirectUrl: "/products",
+        });
+    } catch (error) {
+      console.log("Error logging in:", error);
+      res
+        .status(500)
+        .send({
+          status: "error",
+          message: "Error logging in",
+          error: error.message,
+        });
     }
-
-    const { user } = req;
-    const { _id, first_name, last_name, email, age, role, cart } = user;
-    if (!_id || !first_name || !last_name || !email || !age || !role || !cart) {
-      return res.status(400).send({ error: "Failed to login" });
-    }
-
-    const token = generateToken({
-      id: _id,
-      first_name,
-      last_name,
-      role,
-      age,
-      cart,
-      email,
-    });
-    setTokenCookie(res, token);
-
-    res.redirect("/products");
-
-    res.send({
-      status: "success",
-      message: "Logged in successfully",
-    });
   }
 
+  // static async login(req, res) {
+  //   try {
+  //     const { _id, first_name, last_name, role, age, email } = req.user;
+  //     const serializableUser = {
+  //       id: _id,
+  //       first_name,
+  //       last_name,
+  //       age: Number(age),
+  //       email,
+  //       role: role || "user",
+  //       cart: req.user.cart || [],
+  //     };
+  //     const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
+  //       expiresIn: "1h",
+  //     });
+
+  //     res.cookie("authToken", token, {
+  //       httpOnly: true,
+  //       secure: true,
+  //       sameSite: "Strict",
+  //     });
+  //     res.status(200).send({
+  //       status: "success",
+  //       message: "User logged in successfully",
+  //       payload: {
+  //         user: serializableUser,
+  //       },
+  //     });
+  //     res.redirect("/products");
+  //   } catch (error) {
+  //     res.status(400).send({
+  //       status: "error",
+  //       error: "Invalid credentials",
+  //       alert: "Invalid credentials, please try again",
+  //     });
+  //   }
+  // }
+
   static async getLoginError(req, res) {
-    console.log("Inside getLoginError");
-    console.log("Request:", req);
-    console.log("Response:", res);
     res.status(400).send({
       status: "error",
       error: "Invalid credentials",

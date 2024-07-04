@@ -1,20 +1,17 @@
 const { Router } = require("express");
 const passport = require("passport");
 const SessionController = require("../controllers/sessions.controller");
-const { setTokenCookie, } = require("../utils");
+const { setTokenCookie, validateToken } = require("../utils");
 
 const sessionsRouter = Router();
 
 sessionsRouter.post(
   "/register",
-  passport.authenticate("register", { session: false }),
-  setTokenCookie,
   SessionController.registerUser
 );
 
 sessionsRouter.post(
   "/login",
-  passport.authenticate("login", { failureRedirect: "/login-fail" }),
   SessionController.login
 );
 
@@ -35,7 +32,7 @@ sessionsRouter.get(
   SessionController.github
 );
 
-sessionsRouter.get("/current", SessionController.getCurrent);
+sessionsRouter.get("/current", validateToken, SessionController.getCurrent);
 
 sessionsRouter.post("/reset-password", SessionController.getResetPassword);
 
