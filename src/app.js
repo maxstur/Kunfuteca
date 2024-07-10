@@ -13,7 +13,7 @@ dotenv.config({
 const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const initializePassport = require("./config/passport.config");
@@ -21,8 +21,8 @@ const initializePassport = require("./config/passport.config");
 /** Configs */
 const PORT = require("./config/environment.config").PORT;
 const ENVIRONMENT = require("./config/environment.config").ENVIRONMENT;
-const MONGO_CONNECTOR_LINK =
-  require("./config/environment.config").MONGO_CONNECTOR_LINK;
+// const MONGO_CONNECTOR_LINK =
+//   require("./config/environment.config").MONGO_CONNECTOR_LINK;
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
@@ -53,10 +53,10 @@ app.engine("handlebars", handlebars.engine());
 app.set("views", `${__dirname}/views`);
 app.set("view engine", "handlebars");
 
-mongoose
-  .connect(MONGO_CONNECTOR_LINK)
-  .then(() => console.log("DB connected successfully"))
-  .catch((err) => console.error("Could not connect to MongoDB", err));
+// mongoose
+//   .connect(MONGO_CONNECTOR_LINK)
+//   .then(() => console.log("DB connected successfully"))
+//   .catch((err) => console.error("Could not connect to MongoDB", err));
 
 // Server Config
 const serverHttp = app.listen(PORT, () => {

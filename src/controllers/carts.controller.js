@@ -1,6 +1,4 @@
-const CartService = require("../services/carts.service");
 
-const cartsService = new CartService();
 
 // El cartService es mi acceso a la capa de persistencia
 // El cartController es mi acceso a la capa de logica de negocios

@@ -33,7 +33,7 @@ createProductBtn.addEventListener("click", () => {
 
 // socket.on('newProduct', (data) => {
 
-socket.on("Lista actualizada", ({ products }) => {
+socket.on("List of products updated", ({ products }) => {
   productsTable.innerHTML = "";
   products.forEach((product) => {
     productsTable.innerHTML += `

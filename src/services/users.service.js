@@ -1,4 +1,4 @@
-clase UsersService {
+class UsersService {
     constructor(dao) {
         this.dao = dao;
     }
@@ -29,4 +29,4 @@ clase UsersService {
     }
 }
 
-module.exports = UserService
+module.exports = UsersService

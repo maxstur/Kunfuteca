@@ -12,5 +12,5 @@ const usersService = new UsersService(new UsersDao());
 module.exports = {
     cartsService,
     productsService,
-    usersService
+    usersService,
 }

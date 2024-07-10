@@ -1,9 +1,12 @@
 const dotenv = require("dotenv");
-const {Command}= require("commander");
-dotenv.config(
-  { }
-);
+// const {Command}= require("commander");
 
+dotenv.config();
+
+// const program = new Command();
+// program.option("--mode <modo>").parse(process.argv);
+// const options = program.opts();
+// console.log(options, "options");
 
 module.exports = {
   MONGO_CONNECTOR_LINK: process.env.MONGO_CONNECTOR_LINK,
