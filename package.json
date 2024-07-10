@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "debug": "node --inspect -r dotenv/config -e .env.development src/app.js"
   },
   "engines": {
     "node": "18.12.1"

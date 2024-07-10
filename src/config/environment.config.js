@@ -1,5 +1,8 @@
 const dotenv = require("dotenv");
-dotenv.config();
+const {Command}= require("commander");
+dotenv.config(
+  { }
+);
 
 
 module.exports = {

@@ -1,9 +1,6 @@
-//<---Instanciando un DAO de Mongo. persistencia con Mongoose--->
-const ProductsDao = require("../dao/dbManagers/products.dao");
-
 class ProductsService {
-  constructor() {
-    this.dao = new ProductsDao();
+  constructor(dao) {
+    this.dao = dao;
   }
 
   async getAll(queryParams = null) {

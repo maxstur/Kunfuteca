@@ -6,15 +6,59 @@ const {
   setTokenCookie,
   isValidPassword,
 } = require("../utils");
-const userModel = require("../dao/models/users");
+const {
+  EMAIL_ADMIN_1,
+  EMAIL_ADMIN_2,
+  EMAIL_ADMIN_3,
+} = require("../config/environment.config");
+const userModel = require("../dao/models/user");
 
 class SessionsController {
   static async registerUser(req, res, next) {
     try {
+      const { first_name, last_name, email, age, password } = req.body;
+
+      if (!first_name || !last_name || !email || !password || !age) {
+        return res.status(400).send({
+          status: "error",
+          message: "All fields are required",
+          alert: "All fields are required",
+        });
+      }
+
+      const existingUser = await userModel.findOne({ email });
+      if (existingUser) {
+        console.log("User already exists");
+        return res.status(400).send({
+          status: "error",
+          message: "User already exists",
+          alert: "User already exists, please login",
+        });
+      }
+
+      // const role =
+      //   email === EMAIL_ADMIN_1 ||
+      //   email === EMAIL_ADMIN_2 ||
+      //   email === EMAIL_ADMIN_3
+      //     ? "admin"
+      //     : "user";
+
+      const newUser = await userModel.create({
+        first_name,
+        last_name,
+        email,
+        age,
+        password: createdHash(password),
+        role,
+        cart: [],
+      });
+
+      console.log("User created:", newUser);
+
       res.status(201).send({
         status: "success",
         message: "User registered successfully",
-        payload: user,
+        payload: newUser,
       });
     } catch (error) {
       next(error);
@@ -62,22 +106,18 @@ class SessionsController {
         secure: true,
         sameSite: "strict",
       });
-      res
-        .status(200)
-        .send({
-          status: "success",
-          message: "Login successful",
-          redirectUrl: "/products",
-        });
+      res.status(200).send({
+        status: "success",
+        message: "Login successful",
+        redirectUrl: "/products",
+      });
     } catch (error) {
       console.log("Error logging in:", error);
-      res
-        .status(500)
-        .send({
-          status: "error",
-          message: "Error logging in",
-          error: error.message,
-        });
+      res.status(500).send({
+        status: "error",
+        message: "Error logging in",
+        error: error.message,
+      });
     }
   }
 
@@ -145,8 +185,10 @@ class SessionsController {
       last_name,
       age: Number(age),
       email,
+      role: role || "user",
+      cart: req.user.cart || [],
     };
-    const token = jwt.sign(serializableUser, JWT_PRIVATE_KEY, {
+    const token = generateToken(serializableUser, JWT_PRIVATE_KEY, {
       expiresIn: "1h",
     });
 
@@ -155,7 +197,11 @@ class SessionsController {
       secure: true,
       sameSite: "Strict",
     });
-    res.redirect("/products");
+    res.status(200).send({
+      status: "success",
+      message: "User logged in successfully",
+      redirectUrl: "/current",
+    });
   }
 
   static async getCurrent(req, res) {

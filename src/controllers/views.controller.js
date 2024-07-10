@@ -43,7 +43,7 @@ class ViewsController {
 
   static async getProducts(req, res) {
     try {
-      const { products: foundProducts, ...rest } =
+      const { products: foundProducts, user: validateToken } =
         await productsService.getProducts(req.query || {});
 
       if (!foundProducts) {
@@ -53,7 +53,7 @@ class ViewsController {
       const renderedData = {
         products: foundProducts,
         style: "products.css",
-        ...rest,
+        user: validateToken,
       };
 
       res.render("products", renderedData);
@@ -150,10 +150,12 @@ class ViewsController {
   }
 
   static async getResetPassword(req, res) {
-    if (!req.params.token) {
-      return res.sendForbiddenAccess({ error: "Invalid token" });
+    if (!req.token) {
+      return res.send({ error: "Invalid token" });
     }
-    res.render("resetPassword", { token: req.params.token });
+    res.render("resetPassword", { token: req.token });
+
+    res.status(200).send({ message: "Reset password form", alert: "Your password has been reset" });
   }
 
   static async getLogout(req, res) {

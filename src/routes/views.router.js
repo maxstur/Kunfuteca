@@ -21,7 +21,7 @@ viewsRouter.get("/login-fail", ViewsController.getLoginError);
 viewsRouter.get("*", ViewsController.get404);
 
 /** products with token */
-viewsRouter.get("/products", passport.authenticate("jwt", { session: false }), ViewsController.getProducts);
+viewsRouter.get("/products", validateToken, ViewsController.getProducts);
 viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
 viewsRouter.get("/products/:pid", ViewsController.getProductById);
 
@@ -31,10 +31,10 @@ viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
 /** Current user ["PRIVATE"] */
 viewsRouter.get(
-  "/current",
+  "/current", validateToken, passport.authenticate("jwt", { session: false }),
   ViewsController.getCurrent
 );
-viewsRouter.get("/resetPassword/:token", ViewsController.getResetPassword);
+viewsRouter.get("/resetPassword", validateToken, passport.authenticate("jwt", { session: false }), ViewsController.getResetPassword);
 viewsRouter.get("/logout", ViewsController.getLogout);
 
 module.exports = viewsRouter;

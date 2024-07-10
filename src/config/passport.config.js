@@ -2,14 +2,14 @@ const passport = require("passport");
 const LocalStrategy = require("passport-jwt").Strategy;
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
-const userModel = require("../dao/models/users");
+const userModel = require("../dao/models/user");
 const { createdHash, isValidPassword } = require("../utils");
 const {
+  JWT_PRIVATE_KEY,
   EMAIL_ADMIN_1,
   EMAIL_ADMIN_2,
   EMAIL_ADMIN_3,
 } = require("../config/environment.config");
-const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 // const cookieExtractor = function(req) {
 //   let token = null;
@@ -20,7 +20,7 @@ const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 // }
 const extractors = [
   (req) => req?.cookies?.authToken,
-  (req) => req?.headers?.authorization?.split(' ')[1],
+  (req) => req?.headers?.authorization?.split(" ")[1],
 ];
 
 const initializePassport = () => {
@@ -28,9 +28,8 @@ const initializePassport = () => {
     "jwt",
     new JwtStrategy(
       {
-        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
         secretOrKey: JWT_PRIVATE_KEY,
-        
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
         passReqToCallback: true,
         session: false,
       },
@@ -51,50 +50,50 @@ const initializePassport = () => {
     )
   );
 
-  passport.use(
-    "register",
-    new LocalStrategy(
-      {
-        passReqToCallback: true,
-        usernameField: "email",
-        secretOrKey: JWT_PRIVATE_KEY,
-        session: false,
-        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
-      },
-      async (req, email, password, done) => {
-        try {
-          const { firstName, lastName, age } = req.body;
+  // passport.use(
+  //   "register",
+  //   new LocalStrategy(
+  //     {
+  //       secretOrKey: JWT_PRIVATE_KEY,
+  //       jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
+  //       passReqToCallback: true,
+  //       usernameField: "email",
+  //       session: false,
+  //     },
+  //     async (req, email, password, done) => {
+  //       try {
+  //         const { firstName, lastName, age } = req.body;
 
-          if (!firstName || !lastName || !email || !password || !age) {
-            return done(null, false, { message: "All fields are required" });
-          }
+  //         if (!firstName || !lastName || !email || !password || !age) {
+  //           return done(null, false, { message: "All fields are required" });
+  //         }
 
-          const existingUser = await userModel.findOne({ email });
-          if (existingUser) {
-            return done(null, false, { message: "User already exists" });
-          }
+  //         const existingUser = await userModel.findOne({ email });
+  //         if (existingUser) {
+  //           return done(null, false, { message: "User already exists" });
+  //         }
 
-          const role = email === EMAIL_ADMIN_1 || email === EMAIL_ADMIN_2 || email === EMAIL_ADMIN_3 ? "admin" : "user";
+  //         const role = email === EMAIL_ADMIN_1 || email === EMAIL_ADMIN_2 || email === EMAIL_ADMIN_3 ? "admin" : "user";
 
-          const newUser = {
-            firstName,
-            lastName,
-            email,
-            age,
-            password: createdHash(password),
-            role,
-            cart: [],
-          };
+  //         const newUser = {
+  //           firstName,
+  //           lastName,
+  //           email,
+  //           age,
+  //           password: createdHash(password),
+  //           role,
+  //           cart: [],
+  //         };
 
-          const result = await userModel.create(newUser);
-          return done(null, result, { message: "User registered successfully" });
-        } catch (error) {
-          console.error("Error during user registration:", error);
-          done(error);
-        }
-      }
-    )
-  );
+  //         const result = await userModel.create(newUser);
+  //         return done(null, result, { message: "User registered successfully" });
+  //       } catch (error) {
+  //         console.error("Error during user registration:", error);
+  //         done(error);
+  //       }
+  //     }
+  //   )
+  // );
 
   // passport.use(
   //   "login",
@@ -127,8 +126,10 @@ const initializePassport = () => {
     "local",
     new LocalStrategy(
       {
+        secretOrKey: JWT_PRIVATE_KEY,
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
         usernameField: "email",
-        passwordField: "password",
+        session: false,
       },
       async (email, password, done) => {
         try {
@@ -162,8 +163,11 @@ const initializePassport = () => {
               lastName: "",
               email: profile._json.email,
               age: 21 || 0,
-              role: [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(profile._json.email) ? "admin" : "user",
-              cart: [],
+              // role: [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
+              //   profile._json.email
+              // )
+              //   ? "admin"
+              //   : "user",
             };
 
             const result = await userModel.create(newUser);
