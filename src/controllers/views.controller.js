@@ -38,23 +38,10 @@ class ViewsController {
 
   static async getProducts(req, res) {
     try {
-      const { products: foundProducts, user: validateToken } =
-        await productsService.getProducts(req.query || {});
-
-      if (!foundProducts) {
-        throw new Error("Products not found");
-      }
-
-      const renderedData = {
-        products: foundProducts,
-        style: "products.css",
-        user: validateToken,
-      };
-
-      res.render("products", renderedData);
+      const { docs,...rest } = await productsService.getAll(req.query);
+      res.render("products", { products: docs, style: "products.css", user: req.user, ...rest });
     } catch (error) {
-      const errorMessage = error.message || "Unknown error";
-      res.send({ status: "error", error: errorMessage });
+      res.status( errror.status || 500).send({ status: "error", error: "Products don't exist" });
     }
   }
 

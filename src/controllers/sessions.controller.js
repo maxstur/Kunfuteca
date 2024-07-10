@@ -205,7 +205,9 @@ class SessionsController {
   }
 
   static async getCurrent(req, res) {
-    res.json({ user: req.user });
+    const user = req.user;
+    const userDTO = new UserDTO(user);
+    res.send({payload: userDTO});
   }
 
   static async getResetPassword(req, res) {
