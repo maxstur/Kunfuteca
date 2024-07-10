@@ -1,4 +1,4 @@
-const ProductsService = require("../services/products.service");
+const productsService = require("../repositories/index").productsService;
 
 const productsService = new ProductsService();
 

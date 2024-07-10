@@ -1,11 +1,6 @@
-const { fork } = require("child_process");
-const { soldProducts } = require("../utils");
+const cartsService = require("../repositories/index").cartsService;
+const productsService = require("../repositories/index").productsService;
 
-const ProductsService = require("../services/products.service");
-const CartsService = require("../services/carts.service");
-
-const productsService = new ProductsService();
-const cartsService = new CartsService();
 
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 let visitorsCounter = 0;

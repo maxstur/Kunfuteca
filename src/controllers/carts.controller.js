@@ -1,4 +1,4 @@
-
+const cartsService = require("../repositories/index").cartsService;
 
 // El cartService es mi acceso a la capa de persistencia
 // El cartController es mi acceso a la capa de logica de negocios
