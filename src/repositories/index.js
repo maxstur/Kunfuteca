@@ -1,16 +1,18 @@
-const { CartsDao, ProductsDao, UsersDao } = require("../dao/factory");
+const { CartsDao, ProductsDao, UsersDao, TicketsDao } = require("../dao/factory");
 
-const CartsService = require("./carts.services");
 const ProductsService = require("./products.services");
 const UsersService = require("./users.services");
+const TicketService = require("./tickets.services");
+const CartsService = require("./carts.services");
 
-const cartsService = new CartsService(new CartsDao(), productsService);
 const productsService = new ProductsService(new ProductsDao());
 const usersService = new UsersService(new UsersDao());
-
+const ticketsService = new TicketService(new TicketsDao());
+const cartsService = new CartsService(new CartsDao(), productsService, ticketsService);
 
 module.exports = {
-    cartsService,
-    productsService,
-    usersService,
-}
+  cartsService,
+  productsService,
+  usersService,
+  ticketsService,
+};

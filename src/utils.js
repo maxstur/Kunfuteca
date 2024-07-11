@@ -24,22 +24,6 @@ const generateToken = (user) => {
   return jwt.sign({ user }, JWT_PRIVATE_KEY, { expiresIn: "1h" });
 };
 
-const validateToken = (req, res, next) => {
-  const token = req.cookies.authToken;
-  if (!token) {
-    return res
-      .status(401)
-      .send({ status: "error", error: "Not authenticated" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_PRIVATE_KEY);
-    req.user = decoded.user;
-    next();
-  } catch (error) {
-    return res.status(401).send({ status: "error", error: "Invalid token" });
-  }
-};
 
 const setTokenCookie = (req, res, next) => {
   if (!req.user) {
@@ -74,5 +58,4 @@ module.exports = {
   soldProducts,
   generateToken,
   setTokenCookie,
-  validateToken,
 };

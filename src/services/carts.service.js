@@ -1,7 +1,12 @@
+const MailingService = require("./mailing.service");
+
+const mailingService = new MailingService();
+
 class CartsService {
-  constructor(dao, productsService) {
+  constructor(dao, productsService, tiketsService) {
     this.dao = dao;
     this.productsService = productsService;
+    this.tiketsService = tiketsService;
   }
   async getAll() {
     return await this.dao.getAll();
@@ -101,6 +106,33 @@ class CartsService {
     }
     await this.dao.update(cartId, { products: [] });
     return this.dao.getById(cartId);
+  }
+
+  async purchase(cartId, userEmail) {
+    const cart = await this.dao.getById(cartId);
+
+    const notPurchasedIds = [];
+    let totalAmount = 0;
+
+    for (let i = 0; i < cart.products.length; i++) {
+      const product = cart.products[i];
+      const remainder = product.product.stock - product.quantity;
+      if (remainder >= 0) {
+        await this.productsService.update(product.product._id, {
+          ...product.product,
+          stock: remainder,
+        });
+        await this.deleteProductById(cartId, product.product._id.toString());
+        totalAmount += product.product.price * product.quantity;
+      } else {
+        notPurchasedIds.push(product.product._id.toString());
+      }
+    }
+    if (totalAmount > 0) {
+      await this.tiketsService.generate(userEmail, totalAmount);
+      await mailingService.sendPurchaseEmail(req.user.email);
+    }
+    return { notPurchasedIds };
   }
 }
 module.exports = CartsService;

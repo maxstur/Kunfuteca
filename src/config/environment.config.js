@@ -20,4 +20,12 @@ module.exports = {
   PASSWORD_ADMIN_2: process.env.PASSWORD_ADMIN_2,
   PASSWORD_ADMIN_3: process.env.PASSWORD_ADMIN_3,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+  mailing: {
+    service: process.env.MAILING_SERVICE,
+    port: process.env.MAILING_PORT,
+    auth: {
+      user: process.env.MAILING_USER,
+      pass: process.env.MAILING_PASS,
+    },
+  }
 };

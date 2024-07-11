@@ -1,4 +1,4 @@
-const cartsService = require("../repositories/index").cartsService;
+const { cartsService } = require("../repositories/index");
 
 // El cartService es mi acceso a la capa de persistencia
 // El cartController es mi acceso a la capa de logica de negocios
@@ -92,6 +92,18 @@ class CartsController {
     try {
       const result = await cartsService.cleanCart(id);
       res.send(result);
+    } catch (error) {
+      return res
+        .status(error.status || 500)
+        .send({ status: "error", error: error.message });
+    }
+  }
+
+  static async purchase(req, res) {
+    const { id } = req.params;
+    try {
+      const remainderProducts = await cartsService.purchase(id, req.user.email);
+      res.send({status: "success", payload: remainderProducts});
     } catch (error) {
       return res
         .status(error.status || 500)

@@ -1,13 +1,14 @@
 const { Router } = require("express");
 const ViewsController = require("../controllers/views.controller");
-const { validateToken} = require("../utils");
+const getToken = require("../middlewares/getToken.middleware");
 const passport = require("passport");
+const checkRole = require("../middlewares.js/checkRole.middleware");
 
 const viewsRouter = Router();
 
 viewsRouter.get("/", ViewsController.getProductsHome);
 viewsRouter.get("/realtimeproducts", ViewsController.getRealTimeProducts);
-viewsRouter.get("/chat", ViewsController.getChat);
+viewsRouter.get("/chat", getToken, checkRole("USER"), ViewsController.getChat);
 viewsRouter.get("/calcNoBlocking", ViewsController.getCalcNoBlocking);
 viewsRouter.get("/soldProducts", ViewsController.getSoldProducts);
 viewsRouter.get("/register", ViewsController.getRegister);
@@ -21,7 +22,7 @@ viewsRouter.get("/login-fail", ViewsController.getLoginError);
 viewsRouter.get("*", ViewsController.get404);
 
 /** products with token */
-viewsRouter.get("/products", validateToken, ViewsController.getProducts);
+viewsRouter.get("/products", getToken, ViewsController.getProducts);
 viewsRouter.get("/products.alt", ViewsController.getProductsAlternative);
 viewsRouter.get("/products/:pid", ViewsController.getProductById);
 
@@ -31,10 +32,10 @@ viewsRouter.get("/carts/:cid/products", ViewsController.getCartProducts);
 
 /** Current user ["PRIVATE"] */
 viewsRouter.get(
-  "/current", validateToken, passport.authenticate("jwt", { session: false }),
+  "/current", getToken, passport.authenticate("jwt", { session: false }),
   ViewsController.getCurrent
 );
-viewsRouter.get("/resetPassword", validateToken, passport.authenticate("jwt", { session: false }), ViewsController.getResetPassword);
+viewsRouter.get("/resetPassword", getToken, passport.authenticate("jwt", { session: false }), ViewsController.getResetPassword);
 viewsRouter.get("/logout", ViewsController.getLogout);
 
 module.exports = viewsRouter;

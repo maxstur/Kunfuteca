@@ -12,6 +12,9 @@ const {
   EMAIL_ADMIN_3,
 } = require("../config/environment.config");
 const userModel = require("../dao/models/user");
+const mailingService = require("../services/mailing.service");
+
+const mailingService = new mailingService();
 
 class SessionsController {
   static async registerUser(req, res, next) {
@@ -28,7 +31,6 @@ class SessionsController {
 
       const existingUser = await userModel.findOne({ email });
       if (existingUser) {
-        console.log("User already exists");
         return res.status(400).send({
           status: "error",
           message: "User already exists",
@@ -53,7 +55,7 @@ class SessionsController {
         cart: [],
       });
 
-      console.log("User created:", newUser);
+      await mailingService.sendRegisteredEmail(req.user.email);
 
       res.status(201).send({
         status: "success",
@@ -207,7 +209,7 @@ class SessionsController {
   static async getCurrent(req, res) {
     const user = req.user;
     const userDTO = new UserDTO(user);
-    res.send({payload: userDTO});
+    res.send({ payload: userDTO });
   }
 
   static async getResetPassword(req, res) {

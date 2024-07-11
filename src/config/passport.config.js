@@ -1,5 +1,5 @@
 const passport = require("passport");
-
+const local = require("passport-local");
 const LocalStrategy = require("passport-jwt").Strategy;
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
@@ -11,6 +11,7 @@ const {
   EMAIL_ADMIN_2,
   EMAIL_ADMIN_3,
 } = require("../config/environment.config");
+const { usersService, cartsService } = require("../repositories");
 
 // const cookieExtractor = function(req) {
 //   let token = null;
@@ -53,15 +54,17 @@ const initializePassport = () => {
 
   // passport.use(
   //   "register",
-  //   new LocalStrategy(
+  //   new local.Strategy(
   //     {
-  //       secretOrKey: JWT_PRIVATE_KEY,
-  //       jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
   //       passReqToCallback: true,
   //       usernameField: "email",
   //       session: false,
   //     },
   //     async (req, email, password, done) => {
+  //       let existingUser;
+
+  //       existingUser = await usersService.getUseryProperty("email", email);
+
   //       try {
   //         const { firstName, lastName, age } = req.body;
 
@@ -69,27 +72,32 @@ const initializePassport = () => {
   //           return done(null, false, { message: "All fields are required" });
   //         }
 
-  //         const existingUser = await userModel.findOne({ email });
   //         if (existingUser) {
-  //           return done(null, false, { message: "User already exists" });
+  //           return done(null, false, { message: "Email user already exists" });
   //         }
 
-  //         const role = email === EMAIL_ADMIN_1 || email === EMAIL_ADMIN_2 || email === EMAIL_ADMIN_3 ? "admin" : "user";
+  //         const role =
+  //           email === EMAIL_ADMIN_1 ||
+  //           email === EMAIL_ADMIN_2 ||
+  //           email === EMAIL_ADMIN_3
+  //             ? "admin"
+  //             : "user";
 
-  //         const newUser = {
+  //         const cart = await cartsService.create();
+
+  //         const newUserData = {
   //           firstName,
   //           lastName,
   //           email,
   //           age,
   //           password: createdHash(password),
   //           role,
-  //           cart: [],
+  //           cart: cart._id,
   //         };
 
-  //         const result = await userModel.create(newUser);
-  //         return done(null, result, { message: "User registered successfully" });
+  //         let result = await usersService.create(newUserData);
+  //         return done(null, result);
   //       } catch (error) {
-  //         console.error("Error during user registration:", error);
   //         done(error);
   //       }
   //     }

@@ -30,7 +30,7 @@ class ViewsController {
 
   static async getChat(req, res) {
     try {
-      res.render("chat", {});
+      res.render("chat", {user: req.user});
     } catch (error) {
       res.send({ status: "error", error: "Chat doesn't exist" });
     }
@@ -39,7 +39,8 @@ class ViewsController {
   static async getProducts(req, res) {
     try {
       const { docs,...rest } = await productsService.getAll(req.query);
-      res.render("products", { products: docs, style: "products.css", user: req.user, ...rest });
+      const cart = await cartsService.getById(req.user.cartId);
+      res.render("products", { products: docs, style: "products.css", user: req.user, cart, ...rest });
     } catch (error) {
       res.status( errror.status || 500).send({ status: "error", error: "Products don't exist" });
     }
