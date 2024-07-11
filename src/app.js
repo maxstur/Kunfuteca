@@ -13,19 +13,22 @@ dotenv.config({
 const express = require("express");
 const handlebars = require("express-handlebars");
 const { Server } = require("socket.io");
-const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 const passport = require("passport");
-const initializePassport = require("./config/passport.config");
+const cookieParser = require("cookie-parser");
+const DAOFactory = require("./dao/factory");
 
 /** Configs */
 const PORT = require("./config/environment.config").PORT;
 const ENVIRONMENT = require("./config/environment.config").ENVIRONMENT;
+const MONGO_CONNECTOR_LINK = require("./config/environment.config").MONGO_CONNECTOR_LINK;
 
 /** Routes */
 const productsRouter = require("./routes/products.router");
 const viewsRouter = require("./routes/views.router");
 const cartsRouter = require("./routes/carts.router");
 const sessionsRouter = require("./routes/sessions.router");
+const mocksRouter = require("./routes/mock.router");
 
 /** Managers */
 const ProductManager = require("./dao/dbManagers/ProductManager");
@@ -35,15 +38,26 @@ const productManager = new ProductManager(__dirname + "/files/products.json");
 /** App */
 const app = express();
 
+/** Passport */
+initializePassport();
+app.use(passport.initialize());
+
+
+/** DB */
+mongoose
+  .connect(MONGO_CONNECTOR_LINK)
+  .then(() => {
+    console.log("MongoDB connected successfully");
+  })
+  .catch((err) => {
+    console.error("Couldn't connect to MongoDB", err);
+  });
+
 /** Cookie Parser & Middlewares*/
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(`${__dirname}/public`));
 app.use(express.urlencoded({ extended: true }));
-
-/** Passport */
-initializePassport();
-app.use(passport.initialize());
 
 /** Handlebars */
 app.engine("handlebars", handlebars.engine());
@@ -79,7 +93,6 @@ io.on("connection", async (socket) => {
   });
 
   /* Chat */
-
   const messages = await messageModel.find().lean();
   socket.emit("chat messages", { messages });
 
@@ -94,5 +107,5 @@ io.on("connection", async (socket) => {
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/sessions", sessionsRouter);
-
+app.use("/api/mocks", mocksRouter);
 app.use("/", viewsRouter);

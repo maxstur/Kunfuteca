@@ -1,5 +1,5 @@
-const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const jwt = require("jsonwebtoken");
+const { JWT_PRIVATE_KEY } = require("../config/environment.config");
 
 const getToken = (req, res, next) => {
     let token = req.cookies.authToken;

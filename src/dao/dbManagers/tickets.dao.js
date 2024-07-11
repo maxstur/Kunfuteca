@@ -1,4 +1,6 @@
-const ticketModel = require("../../models/ticket");
+const ticketModel = require("../models/ticket");
+
+const _id = "5f9e2e9c6a5a8b3f8d8e8f8g";
 
 class TicketsDao {
     async getAll() {

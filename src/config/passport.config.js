@@ -1,25 +1,16 @@
 const passport = require("passport");
-const local = require("passport-local");
 const LocalStrategy = require("passport-jwt").Strategy;
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
 const userModel = require("../dao/models/user");
-const { createdHash, isValidPassword } = require("../utils");
+const { isValidPassword } = require("../utils");
 const {
   JWT_PRIVATE_KEY,
   EMAIL_ADMIN_1,
   EMAIL_ADMIN_2,
   EMAIL_ADMIN_3,
 } = require("../config/environment.config");
-const { usersService, cartsService } = require("../repositories");
 
-// const cookieExtractor = function(req) {
-//   let token = null;
-//   if (req && req.cookies) {
-//     token = req.cookies["authToken"];
-//   }
-//   return token;
-// }
 const extractors = [
   (req) => req?.cookies?.authToken,
   (req) => req?.headers?.authorization?.split(" ")[1],
@@ -51,85 +42,6 @@ const initializePassport = () => {
       }
     )
   );
-
-  // passport.use(
-  //   "register",
-  //   new local.Strategy(
-  //     {
-  //       passReqToCallback: true,
-  //       usernameField: "email",
-  //       session: false,
-  //     },
-  //     async (req, email, password, done) => {
-  //       let existingUser;
-
-  //       existingUser = await usersService.getUseryProperty("email", email);
-
-  //       try {
-  //         const { firstName, lastName, age } = req.body;
-
-  //         if (!firstName || !lastName || !email || !password || !age) {
-  //           return done(null, false, { message: "All fields are required" });
-  //         }
-
-  //         if (existingUser) {
-  //           return done(null, false, { message: "Email user already exists" });
-  //         }
-
-  //         const role =
-  //           email === EMAIL_ADMIN_1 ||
-  //           email === EMAIL_ADMIN_2 ||
-  //           email === EMAIL_ADMIN_3
-  //             ? "admin"
-  //             : "user";
-
-  //         const cart = await cartsService.create();
-
-  //         const newUserData = {
-  //           firstName,
-  //           lastName,
-  //           email,
-  //           age,
-  //           password: createdHash(password),
-  //           role,
-  //           cart: cart._id,
-  //         };
-
-  //         let result = await usersService.create(newUserData);
-  //         return done(null, result);
-  //       } catch (error) {
-  //         done(error);
-  //       }
-  //     }
-  //   )
-  // );
-
-  // passport.use(
-  //   "login",
-  //   new LocalStrategy(
-  //     {
-  //       usernameField: "email",
-  //       session: false,
-  //       secretOrKey: JWT_PRIVATE_KEY,
-  //       jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
-  //     },
-  //     async (email, password, done) => {
-  //       try {
-  //         console.log("email", email, "password", password);
-  //         const user = await userModel.findOne({ email });
-  //         if (!user || !isValidPassword(user, password)) {
-  //           console.log("User: ", user, "Invalid credentials");
-  //           return done(null, false, { message: "Invalid credentials" });
-  //         }
-
-  //         return done(null, user);
-  //       } catch (error) {
-  //         console.error("Error during user authentication:", error);
-  //         done(error);
-  //       }
-  //     }
-  //   )
-  // );
 
   passport.use(
     "local",
@@ -172,11 +84,11 @@ const initializePassport = () => {
               lastName: "",
               email: profile._json.email,
               age: 21 || 0,
-              // role: [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
-              //   profile._json.email
-              // )
-              //   ? "admin"
-              //   : "user",
+              role: [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
+                profile._json.email
+              )
+                ? "admin"
+                : "user",
             };
 
             const result = await userModel.create(newUser);

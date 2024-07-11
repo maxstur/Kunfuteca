@@ -13,9 +13,7 @@ const createdHash = (password) => {
 
 // Validar que la contraseña coincida con "CompareSync" de bcrypt
 const isValidPassword = (user, password) => {
-  console.log("Comparing passwords");
   const result = bcrypt.compareSync(password, user.password);
-  console.log("Passwords Comparison Result: ", result);
   return result;
 };
 

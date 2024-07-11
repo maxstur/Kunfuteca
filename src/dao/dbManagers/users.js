@@ -21,7 +21,6 @@ class Users {
   }
 
   async getBy(params) {
-    //email | key, value
     let result = await UserModel.findOne(params).populate("cart").lean();
     return result;
   }

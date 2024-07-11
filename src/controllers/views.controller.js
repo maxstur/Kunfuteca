@@ -119,16 +119,11 @@ class ViewsController {
     });
   }
 
-  static async getCurrent(req, res) {
-    if (req.user) {
-      try {
-        const user = await userModel.findOne({ _id: req.user._id }).lean();
-        res.render("current", user);
-      } catch (error) {
-        res.sendUserError({ error: "There was a problem getting the user" });
-      }
-    } else {
-      res.sendUserError({ error: "User not authenticated" });
+  static async getProfile(req, res) {
+    try{
+      res.render("profile", {user: {}});
+    } catch (error) {
+      res.status(error.status || 500).send({ status: "error", error: "Profile doesn't exist" });
     }
   }
 

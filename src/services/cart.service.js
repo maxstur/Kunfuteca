@@ -2,7 +2,7 @@ const MailingService = require("./mailing.service");
 
 const mailingService = new MailingService();
 
-class CartsService {
+class CartService {
   constructor(dao, productsService, tiketsService) {
     this.dao = dao;
     this.productsService = productsService;
@@ -54,10 +54,11 @@ class CartsService {
     if (index >= 0) {
       cart.products[index].quantity++;
     } else {
-      const product = await this.dao.productsService.getById(productId);
-      cart.products.push({ product, quantity: 1 });
+      //await this.productsService.getById(productId);
+      cart.products.push({ product: productId, quantity: 1 });
     }
-    return await this.dao.update(id, cart);
+    await this.dao.update(id, cart);
+    return cart;
   }
   async deleteProductById(cartId, productId) {
     const cart = await this.dao.getById(cartId);
@@ -135,4 +136,4 @@ class CartsService {
     return { notPurchasedIds };
   }
 }
-module.exports = CartsService;
+module.exports = CartService;

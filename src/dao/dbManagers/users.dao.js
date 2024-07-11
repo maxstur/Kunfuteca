@@ -5,12 +5,14 @@ class UsersDao {
         return await userModel.find().lean();
     }
 
-    async saveUser(user) {
-        return await userModel.create(user);
+    async getById(id) {
+        return await userModel.findById({_id:id}).populate("products.product").lean();
     }
 
-    async getById(id) {
-        return await userModel.findById({_id:id}).populate("cart").lean();
+    async getByProperty(property, name) {
+        let opts = {};
+        opts[property] = name;
+        return await userModel.findOne(opts).lean();
     }
 
     async create(product) {

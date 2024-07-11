@@ -1,7 +1,5 @@
 const productsService = require("../repositories/index").productsService;
 
-const productsService = new ProductsService();
-
 class ProductsController {
   static async getAll(req, res) {
     let query = req.query;
