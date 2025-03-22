@@ -1,74 +1,78 @@
-const ProductManager = require("../dao/dbManagers/ProductManager");
-const productManager = new ProductManager();
-const { fork } = require("child_process");
-const { populate } = require("../dao/models/users");
-const { soldProducts } = require("../utils");
+const cartsService = require("../repositories/index").cartsService;
+const productsService = require("../repositories/index").productsService;
+
 
 //Cálculo bloqueante y cantidad de vistas (Fin de la clase 25)
 let visitorsCounter = 0;
 
 class ViewsController {
   static async getProductsHome(req, res) {
+    visitorsCounter++;
+    console.log(
+      `Hello visitors, this web has been visited: ${visitorsCounter}`
+    );
     try {
-      visitorsCounter++;
-      console.log(
-        `Hello visitors, this web has been visited: ${visitorsCounter}`
-      );
-      const products = await productManager.getProducts();
-      res.render("realTimeProducts", { products });
+      const products = await productsService.getAll();
+      res.render("home", { products });
     } catch (error) {
-      res.status(500).send({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Home products don't exist" });
     }
   }
 
   static async getRealTimeProducts(req, res) {
     try {
-      const products = await productManager.getProducts();
+      const products = await productsService.getAll();
       res.render("realTimeProducts", { products });
     } catch (error) {
-      res.status(500).send({ error: "Error al obtener los productos" });
+      res.sendServerError({ error: "Live products don't exist" });
     }
   }
 
   static async getChat(req, res) {
-    res.render("chat", {});
+    try {
+      res.render("chat", {user: req.user});
+    } catch (error) {
+      res.send({ status: "error", error: "Chat doesn't exist" });
+    }
   }
-  
-  /** Products with Token user: req.TokenUser, ["PUBLIC"],*/
+
   static async getProducts(req, res) {
     try {
-      const { docs, ...rest } = await productManager.getProducts(req.query);
-      
-      res.render("products", { products: docs, ...rest });
+      const { docs,...rest } = await productsService.getAll(req.query);
+      const cart = await cartsService.getById(req.user.cartId);
+      res.render("products", { products: docs, style: "products.css", user: req.user, cart, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.status( errror.status || 500).send({ status: "error", error: "Products don't exist" });
     }
   }
 
   static async getProductsAlternative(req, res) {
     try {
-      const { docs, ...rest } = await productManager.getProducts(req.query);
+      const { docs, ...rest } = await productsService.getAll(req.query);
       res.render("products_alternative", { products: docs, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.send({
+        status: "error",
+        error: "Error al obtener los productos alternativos",
+      });
     }
   }
 
-  static async getProduct(req, res) {
+  static async getProductById(req, res) {
     try {
-      const product = await productManager.getProduct(req.params.pid);
+      const product = await productsService.getAll(req.params.pid);
       res.render("product", { product: product });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.send({ status: "error", error: "Product by id doesn't exist" });
     }
   }
 
-  static async getCart(req, res) {
+  static async getCartById(req, res) {
     try {
-      const cart = await cartsManager.getCart(req.params.cid); // O quizás: productManager
-      res.render("cart", cart);
+      const cart = await cartsService.getById(req.params.cid); // O quizás: productManager
+      res.render("cart", { ...cart, style: "products.css" });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.send({ status: "error", error: "Cart by id doesn't exist" });
     }
   }
 
@@ -77,7 +81,7 @@ class ViewsController {
       const { docs, ...rest } = await productManager.getProducts();
       res.render("cartProducts", { products: docs, ...rest });
     } catch (error) {
-      res.send({ status: "error", error: error.message });
+      res.send({ status: "error", error: "Cart products don't exist" });
     }
   }
 
@@ -86,21 +90,63 @@ class ViewsController {
     res.render("register", {});
   }
 
+  static async getRegisterError(req, res) {
+    res.status(400).send({
+      status: "error",
+      error: "User already exists",
+      alert: "User already exists, please login",
+    });
+  }
+
   static async getLogin(req, res) {
     res.render("login", {});
   }
 
-  /** Espacion para current */
-  /** Espacion para current */
-  /** Espacion para current */
-  /** Espacion para current */
+  static async getLoginError(req, res) {
+    res.status(401).send({
+      status: "error",
+      error: "Invalid credentials",
+      alert: "Invalid credentials, please try again",
+    });
+  }
+
+  static async getLoginSuccess(req, res) {
+    res.status(200).send({
+      status: "success",
+      message: "User logged in successfully",
+      payload: {
+        user: req.user}
+    });
+  }
+
+  static async getProfile(req, res) {
+    try{
+      res.render("profile", {user: {}});
+    } catch (error) {
+      res.status(error.status || 500).send({ status: "error", error: "Profile doesn't exist" });
+    }
+  }
 
   static async getResetPassword(req, res) {
-    res.render("resetPassword", {});
+    if (!req.token) {
+      return res.send({ error: "Invalid token" });
+    }
+    res.render("resetPassword", { token: req.token });
+
+    res.status(200).send({ message: "Reset password form", alert: "Your password has been reset" });
   }
 
   static async getLogout(req, res) {
-    res.render("logout", {});
+    req.logout((err) => {
+      if (err) {
+        return res.sendServerError({ error: "Failed to log out" });
+      }
+      res.clearCookie("rodsCookie");
+      start;
+      res.redirect("/login");
+
+      res.sendUserSuccess({ message: "User logged out successfully" });
+    });
   }
 
   static async getCalcNoBlocking(req, res) {
@@ -110,7 +156,7 @@ class ViewsController {
     child.send("Start calculating");
     child.on("message", (result) => {
       console.log("Listening message from child", result);
-      res.send({ result });
+      res.sendServerSuccess({ result });
     });
   }
 
@@ -118,7 +164,19 @@ class ViewsController {
     // Llamada Cálculo bloqueante
     // result de  = operacionCompleja; (fork es para crear un proceso secundario)
     const result = soldProducts();
-    res.send({ result });
+    res.sendServerSuccess({ result });
+  }
+  static get404(req, res) {
+    if (!req.path) {
+      return res.send({
+        status: "error",
+        message: "404 content not found, path is required",
+      });
+    }
+    return res.send({
+      status: "error",
+      message: `404 content not found, there is no route specified for ${req.path}`,
+    });
   }
 }
 

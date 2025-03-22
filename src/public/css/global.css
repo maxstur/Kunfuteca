@@ -1,0 +1,12 @@
+body {
+    font-family: lexend, monserrat, EB Garamond, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: lexend, monserrat;
+    color: #5c0101;
+}
+
+p {
+    color: #26293a;
+}

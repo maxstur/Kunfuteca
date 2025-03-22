@@ -1,29 +1,39 @@
+<div class="navbar">
+  <div class="userInfo">
+    <h2>Welcome to elKunfuteca, {{user.name}}!</h2>
+    <p>{{user.email}}</p>
+      <a href="/api/sessions/logout"><button>Logout</button></a>
+    <p><b>Role: {{user.role}}</b></p>
+    <p>Cart Nº: {{user.cart._id}}</p>
+  </div>
+</div>
+
+<h2>Cart</h2>
+{{#each cart.products}}
+  <p>{{this.product.description}} - Quantity: {{this.quantity}} {{this.product.price}} € <button onclick="deleteProductFromCart('{{this.product._id}}')">Delete</button></p>
+
+{{/each}}
+<button onclick="purchaseCart('{{user.cart._id}}')">Purchase Cart</button>
+<p>Total: {{cart.total}} €</p>
+
+
 <h1>Productos</h1>
 
-{{#if user}}
+<div class="productsContainer">
+  {{#each products}}
+    <div class="productCard">
+      <a href="/products/{{this._id}}"><h3>{{this.description}}</h3></a>
+      <small>{{this._id}}</small>
+      <p>category: {{this.category}}</p>
+      <p>price: {{this.price}}</p>
+      <p>stock: {{this.stock}}</p>
+      <button onclick="addToCart('{{this._id}}', '{{../user.cart}}')">Add to cart</button>
+    </div>
+    <br /><br />
+  {{/each}}
+</div>
 
-  <div>
-    <h2>Welcome to elKunfuteca, {{user.name}}!</h2>
-    <p>This is your registered email: {{user.email}}</p>
-    <p><b>You are a golden {{user.role}}.</b></p>
-    <p>Hurry up! {{user.name}} Kunfuteca can't wait for you!</p>
-    <p>Your cart ID: {{user.cart._id}}</p>
-  </div>
-
-  <a href="/api/sessions/logout"><button>Logout</button></a>
-  <br /><br />
-
-{{/if}}
-{{#each products}}
-  <div>
-    <h2>{{this.description}}</h2>
-    <p>Título: {{this.title}}</p>
-    <p>Precio: {{this.price}}</p>
-    <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
-  </div>
-  <br /><br />
-{{/each}}
-<div>
+<div class="btnProductsPages">
   {{#if hasPrevPage}}
     <a href="{{prevLink}}"><button>Prev</button></a>
   {{else}}

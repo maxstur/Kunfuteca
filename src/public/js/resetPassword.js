@@ -17,7 +17,7 @@ form.addEventListener("submit", (e) => {
             'Content-Type': 'application/json'
         },
     }).then(res => {
-        if(res.status === 200) {
+        if(res.ok) {
             alert("Password changed successfully.");
             setTimeout(() => {
                 window.location.replace('/login');

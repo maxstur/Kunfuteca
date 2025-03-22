@@ -1,18 +1,20 @@
 const passport = require("passport");
-const local = require("passport-local");
+const LocalStrategy = require("passport-jwt").Strategy;
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const GithubStrategy = require("passport-github2");
-const userModel = require("../dao/models/users");
-const { createdHash, isValidPassword } = require("../utils");
-const { JWT_PRIVATE_KEY } = require("../config/environment.config");
+const userModel = require("../dao/models/user");
+const { isValidPassword } = require("../utils");
+const {
+  JWT_PRIVATE_KEY,
+  EMAIL_ADMIN_1,
+  EMAIL_ADMIN_2,
+  EMAIL_ADMIN_3,
+} = require("../config/environment.config");
 
-function cookieExtractor(req) {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies["rodsCookie"];
-  }
-  return token;
-}
+const extractors = [
+  (req) => req?.cookies?.authToken,
+  (req) => req?.headers?.authorization?.split(" ")[1],
+];
 
 const initializePassport = () => {
   passport.use(
@@ -20,12 +22,13 @@ const initializePassport = () => {
     new JwtStrategy(
       {
         secretOrKey: JWT_PRIVATE_KEY,
-        jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
+        passReqToCallback: true,
+        session: false,
       },
-      async (jwt_payload, done) => {
+      async (jwtPayload, done) => {
         try {
-          const user = await userModel.findById(jwt_payload.user._id);
-
+          const user = await userModel.findById(jwtPayload.user._id);
           if (!user) {
             return done(null, false, {
               message: "Have you registered? Invalid token",
@@ -33,6 +36,7 @@ const initializePassport = () => {
           }
           return done(null, user);
         } catch (error) {
+          console.log("Error in passport config", error);
           return done(error, false);
         }
       }
@@ -40,80 +44,22 @@ const initializePassport = () => {
   );
 
   passport.use(
-    "register",
-    new local.Strategy(
+    "local",
+    new LocalStrategy(
       {
-        passReqToCallback: true,
-        usernameField: "email",
-        session: false,
-      },
-      async (req, email, password, done) => {
-        try {
-          const { first_name, last_name, age } = req.body;
-          let { role } = req.body;
-
-          // Validamos los campos
-          if (!first_name || !last_name || !email || !password || !age)
-            return done(null, false, { message: "All fields are required" });
-          
-          // Verificamos si el usuario ya existe
-          const existingUser = await userModel.findOne({ email });
-          if (existingUser) {
-            return done(null, false, {
-              message: "User with that email already exists",
-            });
-          }
-          // Verificamos el rol del usuario
-          if (email == "adminCoder@coder.com" && password == "adminCod3r123") {
-            role = "admin";
-          } else {
-            role = "user";
-          }
-
-          // Creamos un nuevo usuario
-          const newUserData = {
-            first_name,
-            last_name,
-            email,
-            age,
-            password: createdHash(password),
-            role,
-          };
-
-          // Creamos el usuario
-          let result = await userModel.create(newUserData);
-
-          // Retornamos el usuario
-          return done(null, result);
-        } catch (error) {
-          return done(error);
-        }
-      }
-    )
-  );
-
-  passport.use(
-    "login",
-    new local.Strategy(
-      {
+        secretOrKey: JWT_PRIVATE_KEY,
+        jwtFromRequest: ExtractJwt.fromExtractors([...extractors]),
         usernameField: "email",
         session: false,
       },
       async (email, password, done) => {
         try {
           const user = await userModel.findOne({ email });
-          if (!user) {
-            return done(null, false, {
-              message: "User not found or doesn't exist",
-            });
+          if (!user || !isValidPassword(user, password)) {
+            return done(null, false, { message: "Invalid credentials" });
           }
-          if (!isValidPassword(user, password)) {
-            return done(null, false, { message: "Invalid password" });
-          }
-
           return done(null, user);
         } catch (error) {
-          console.error("Error during user authentication:", error);
           return done(error);
         }
       }
@@ -124,34 +70,34 @@ const initializePassport = () => {
     "github",
     new GithubStrategy(
       {
-        clientID: "Iv1.99c8943a5483aae9",
-        callbackURL: "http://localhost:8080/api/sessions/githubcallback",
+        clientID: "Iv1.2f5a0a5c1e5b1f5",
         clientSecret: "a2353def9458d4f3ff9c9d6b92a48d23fb7a4717",
+        callbackURL: "http://localhost:8080/api/sessions/githubcallback",
         session: false,
       },
-      async (accessToken, refreshToken, profile, done) => {
+      async (_accessToken, _refreshToken, profile, done) => {
         try {
-          let role = "user";
-          if (profile._json.email == "adminCoder@coder.com") {
-            role = "admin";
-          }
           const user = await userModel.findOne({ email: profile._json.email });
-
           if (!user) {
-            let newUser = {
-              first_name: profile._json.name,
-              last_name: "",
-              age: 21,
+            const newUser = {
+              firstName: profile._json.name,
+              lastName: "",
               email: profile._json.email,
-              role,
+              age: 21 || 0,
+              role: [EMAIL_ADMIN_1, EMAIL_ADMIN_2, EMAIL_ADMIN_3].includes(
+                profile._json.email
+              )
+                ? "admin"
+                : "user",
             };
-            let result = await userModel.create(newUser);
+
+            const result = await userModel.create(newUser);
             return done(null, result);
-          } else {
-            return done(null, user);
           }
+          return done(null, user);
         } catch (error) {
-          return done(error);
+          console.error("Error during GitHub user authentication:", error);
+          done(error);
         }
       }
     )
