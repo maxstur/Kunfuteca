@@ -1,7 +1,5 @@
 /node_modules
-.env
 .env.development
 .env.test
 .env.production
-.txt
-/.vscode
+.vscode
